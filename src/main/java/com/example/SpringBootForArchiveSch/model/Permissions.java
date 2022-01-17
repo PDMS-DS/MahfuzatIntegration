@@ -1,40 +1,74 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "PERMISSIONS")
 public class Permissions {
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "PermissionID")
     private  Long  permissionID;
+
+    @Column(name = "PermissionArName", nullable = true)
     private String permissionArName;
+
+    @Column(name = "PermissionEnName", nullable = true)
     private String permissionEnName;
+
+    @Column(name = "PermissionDescription", nullable = true)
     private String permissionDescription;
-    private  int enabled;
 
-    @ManyToOne()
-    @JoinColumn(name="MODULE_ID", referencedColumnName = "MODULE_ID")
-    private  Long moduleId;
+    @Column(name = "Enabled", nullable = true )
+    @Type(type = "org.hibernate.type.NumericBooleanType")
+    private  boolean  enabled;
 
-    @ManyToOne()
-    @JoinColumn(name="Action_TYPE_ID", referencedColumnName = "Action_TYPE_ID")
-    private  Long actionTypeId;
 
-    public Permissions(){
 
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MODULE_ID")
+    private Module module;
 
-    public Permissions(Long permissionID, String permissionArName, String permissionEnName, String permissionDescription, int enabled, Long moduleId, Long actionTypeId) {
+
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Action_TYPE_ID")
+    private ActionTypes actionTypes;
+
+
+
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.ALL
+            },mappedBy = "permissionsG")
+    Set<Groups> groups;
+
+
+    public Permissions(Long permissionID, String permissionArName, String permissionEnName, String permissionDescription, boolean enabled, Module module, ActionTypes actionTypes) {
         this.permissionID = permissionID;
         this.permissionArName = permissionArName;
         this.permissionEnName = permissionEnName;
         this.permissionDescription = permissionDescription;
         this.enabled = enabled;
-        this.moduleId = moduleId;
-        this.actionTypeId = actionTypeId;
+        this.module = module;
+        this.actionTypes = actionTypes;
     }
 
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    public Permissions(){
+
+    }
+
+
+
+
     public Long getPermissionID() {
         return permissionID;
     }
@@ -43,7 +77,7 @@ public class Permissions {
         this.permissionID = permissionID;
     }
 
-    @Column(name = "PermissionArName", nullable = true)
+
     public String getPermissionArName() {
         return permissionArName;
     }
@@ -52,7 +86,7 @@ public class Permissions {
         this.permissionArName = permissionArName;
     }
 
-    @Column(name = "PermissionEnName", nullable = true)
+
     public String getPermissionEnName() {
         return permissionEnName;
     }
@@ -61,7 +95,7 @@ public class Permissions {
         this.permissionEnName = permissionEnName;
     }
 
-    @Column(name = "PermissionDescription", nullable = true)
+
     public String getPermissionDescription() {
         return permissionDescription;
     }
@@ -70,36 +104,47 @@ public class Permissions {
         this.permissionDescription = permissionDescription;
     }
 
-    @Column(name = "Enabled", nullable = true)
-    public int getEnabled() {
+
+
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(int enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    @Column(name = "MODULE_ID", nullable = false)
-    public Long getModuleId() {
-        return moduleId;
+
+    public void setGroups(Set<Groups> groups) {
+        this.groups = groups;
     }
 
-    public void setModuleId(Long moduleId) {
-        this.moduleId = moduleId;
+    @JsonBackReference
+    public Set<Groups> getGroups() {
+        return groups;
     }
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "Action_TYPE_ID", nullable = false)
-//    @Column(name = "Action_TYPE_ID", nullable = false)
 
-    @Column(name = "Action_TYPE_ID", nullable = false)
-    public Long getActionTypeId() {
-        return actionTypeId;
+    public void setActionTypes(ActionTypes actionTypes) {
+        this.actionTypes = actionTypes;
     }
 
-    public void setActionTypeId(Long actionTypeId) {
-        this.actionTypeId = actionTypeId;
+    @JsonBackReference
+    public ActionTypes getActionTypes() {
+        return actionTypes;
     }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+    @JsonBackReference
+    public Module getModule() {
+        return module;
+    }
+
+
+
 
     @Override
     public String toString() {
@@ -109,8 +154,6 @@ public class Permissions {
                 ", permissionEnName='" + permissionEnName + '\'' +
                 ", permissionDescription='" + permissionDescription + '\'' +
                 ", enabled=" + enabled +
-                ", moduleId=" + moduleId +
-                ", actionTypeId=" + actionTypeId +
                 '}';
     }
 }

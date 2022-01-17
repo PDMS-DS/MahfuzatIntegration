@@ -1,5 +1,8 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Set;
@@ -9,9 +12,21 @@ import java.util.Set;
 @Table(name = "ACTION_TYPES")
 public class ActionTypes {
 
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "ACTION_TYPE_ID", nullable = false)
     private  Long actionTypeId ;
+
+    @Column(name = "ACTION_TYPE_NAME_EN", nullable = true)
     private String actionTypeNameEn;
+
+    @Column(name = "ACTION_TYPE_NAME_AR", nullable = true)
     private String actionTypeNameAr;
+
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL , mappedBy = "actionTypes")
+    private Set<Permissions> permissionsA ;
+
 
     public ActionTypes(){
 
@@ -23,11 +38,6 @@ public class ActionTypes {
         this.actionTypeNameAr = actionTypeNameAr;
     }
 
-
-
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "ACTION_TYPE_ID", nullable = false)
     public Long getActionTypeId() {
         return actionTypeId;
     }
@@ -36,11 +46,6 @@ public class ActionTypes {
         this.actionTypeId = actionTypeId;
     }
 
-
-    private Set<Permissions> permissions ;
-
-
-    @Column(name = "ACTION_TYPE_NAME_EN", nullable = true)
     public String getActionTypeNameEn() {
         return actionTypeNameEn;
     }
@@ -49,7 +54,7 @@ public class ActionTypes {
         this.actionTypeNameEn = actionTypeNameEn;
     }
 
-    @Column(name = "ACTION_TYPE_NAME_AR", nullable = true)
+
     public String getActionTypeNameAr() {
         return actionTypeNameAr;
     }
@@ -58,14 +63,13 @@ public class ActionTypes {
         this.actionTypeNameAr = actionTypeNameAr;
     }
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "Action_TYPE_ID")
-    public Set<Permissions> getPermissions() {
-        return permissions;
+    @JsonManagedReference
+    public Set<Permissions> getPermissionsA() {
+        return permissionsA;
     }
 
-    public void setPermissions(Set<Permissions> permissions) {
-        this.permissions = permissions;
+    public void setPermissionsA(Set<Permissions> permissions) {
+        this.permissionsA = permissions;
     }
 
     @Override
