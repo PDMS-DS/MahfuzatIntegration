@@ -1,37 +1,40 @@
 package com.example.SpringBootForArchiveSch.service;
-import com.example.SpringBootForArchiveSch.model.Box;
-import com.example.SpringBootForArchiveSch.repository.BoxRepo;
+import com.example.SpringBootForArchiveSch.model.BoxType;
+import com.example.SpringBootForArchiveSch.repository.BoxTypeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-public class BoxTypeServiceImpl implements BoxService{
+@Service
+public class BoxTypeServiceImpl implements BoxTypeService {
 
-    private BoxRepo boxRepo ;
+    private BoxTypeRepo boxTypeRepo ;
 
     @Autowired
-    public BoxTypeServiceImpl(BoxRepo boxRepo) {
-        this.boxRepo = boxRepo;
+    public BoxTypeServiceImpl(BoxTypeRepo boxTypeRepo) {
+        this.boxTypeRepo = boxTypeRepo;
     }
 
     @Override
-    public List<Box> findAll() {
-        return null;
+    public List<BoxType> findAll() {
+        return boxTypeRepo.findAll();
     }
 
     @Override
-    public Optional<Box> findById(Long theId) {
-        return Optional.empty();
+    public Optional<BoxType> findById(Long theId) {
+        return boxTypeRepo.findById(theId);
     }
 
     @Override
-    public Box save(Box theBox) {
-        return null;
+    public BoxType save(BoxType theBoxType) {
+        boxTypeRepo.save(theBoxType);
+        return theBoxType;
     }
 
     @Override
-    public void deleteById(Box theBox) {
-
+    public void deleteById(BoxType theBoxType) {
+        boxTypeRepo.delete(theBoxType);
     }
 }

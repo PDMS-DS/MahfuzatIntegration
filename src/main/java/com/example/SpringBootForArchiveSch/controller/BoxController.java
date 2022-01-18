@@ -3,8 +3,10 @@ package com.example.SpringBootForArchiveSch.controller;
 
 import com.example.SpringBootForArchiveSch.exception.ResourceNotFoundException;
 import com.example.SpringBootForArchiveSch.model.Box;
+import com.example.SpringBootForArchiveSch.model.BoxType;
 import com.example.SpringBootForArchiveSch.model.Shelf;
 import com.example.SpringBootForArchiveSch.service.BoxService;
+import com.example.SpringBootForArchiveSch.service.BoxTypeService;
 import com.example.SpringBootForArchiveSch.service.ShelfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,9 @@ public class BoxController {
     @Autowired
     private ShelfService shelfService;
 
+    @Autowired
+    private BoxTypeService boxTypeService;
+
     @GetMapping("/box")
     public List<Box> getAllBox() {
         return boxService.findAll();
@@ -36,12 +41,21 @@ public class BoxController {
         return ResponseEntity.ok().body(box);
     }
 
-    @PostMapping("/box/{shelfId}")
-    public ResponseEntity<Box> createBox(@PathVariable(value = "shelfId") Long shelfId
+    @PostMapping("/box/{shelfId}/{boxTypeId}")
+    public ResponseEntity<Box> createBox(@PathVariable(value = "shelfId") Long shelfId , @PathVariable(value = "boxTypeId") Long boxTypeId
             ,@Valid @RequestBody Box box) throws ResourceNotFoundException{
-        Shelf shelf = shelfService.findById(shelfId)
-                .orElseThrow(() -> new ResourceNotFoundException("Shelf not found for this id :: " + shelfId));;
-        box.setShelf(shelf);
+        if(boxTypeId != null ) {
+            BoxType boxType = boxTypeService.findById(boxTypeId)
+                    .orElseThrow(() -> new ResourceNotFoundException("boxTypeId not found for this id :: " + boxTypeId));
+            box.setBoxType(boxType);
+
+        }
+        if(shelfId != null) {
+            Shelf shelf = shelfService.findById(shelfId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shelf not found for this id :: " + shelfId));
+            box.setShelf(shelf);
+
+        }
         return ResponseEntity.ok().body(boxService.save(box));
     }
 
@@ -54,8 +68,6 @@ public class BoxController {
 
         box.setNameAr(boxDetails.getNameAr());
         box.setNameEn(boxDetails.getNameEn());
-//        box.setShelf(boxDetails.getShelf().getShelfId());
-        box.setBoxTypeId(boxDetails.getBoxTypeId());
         box.setCapacity(boxDetails.getCapacity());
         box.setSerial(boxDetails.getSerial());
         box.setDate(boxDetails.getDate());

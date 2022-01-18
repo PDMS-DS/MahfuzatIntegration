@@ -1,6 +1,7 @@
 package com.example.SpringBootForArchiveSch.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -22,8 +23,8 @@ public class Box {
     private String nameEn;
 
 
-    @Column(name = "BOX_TYPE_ID", nullable = true)
-    private int boxTypeId;
+//    @Column(name = "BOX_TYPE_ID", nullable = true)
+//    private int boxTypeId;
 
     @Column(name = "CAPACITY", nullable = true)
     private Long capacity;
@@ -44,14 +45,18 @@ public class Box {
     @JoinColumn(name="SHELF_ID", nullable=true)
     private Shelf shelf;
 
+    @JsonIgnore
+    @ManyToOne(fetch  = FetchType.EAGER)
+    @JoinColumn(name="BOX_TYPE_ID", nullable=true)
+    private BoxType boxType;
+
     public Box() {
     }
 
-    public Box(Long boxId, String nameAr, String nameEn,  int boxTypeId, Long capacity, Date addedOn, int serial, Date date) {
+    public Box(Long boxId, String nameAr, String nameEn,  Long capacity, Date addedOn, int serial, Date date) {
         this.boxId = boxId;
         this.nameAr = nameAr;
         this.nameEn = nameEn;
-        this.boxTypeId = boxTypeId;
         this.capacity = capacity;
         this.addedOn = addedOn;
         this.serial = serial;
@@ -80,14 +85,6 @@ public class Box {
 
     public void setNameEn(String nameEn) {
         this.nameEn = nameEn;
-    }
-
-    public int getBoxTypeId() {
-        return boxTypeId;
-    }
-
-    public void setBoxTypeId(int boxTypeId) {
-        this.boxTypeId = boxTypeId;
     }
 
     public Long getCapacity() {
@@ -130,9 +127,13 @@ public class Box {
         this.shelf = shelf;
     }
 
+    public BoxType getBoxType() {
+        return boxType;
+    }
 
-
-
+    public void setBoxType(BoxType boxType) {
+        this.boxType = boxType;
+    }
 
     @Override
     public String toString() {
@@ -140,7 +141,6 @@ public class Box {
                 "boxId=" + boxId +
                 ", nameAr='" + nameAr + '\'' +
                 ", nameEn='" + nameEn + '\'' +
-                ", boxTypeId=" + boxTypeId +
                 ", capacity=" + capacity +
                 ", addedOn=" + addedOn +
                 ", serial=" + serial +
