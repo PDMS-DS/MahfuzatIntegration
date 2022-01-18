@@ -2,45 +2,25 @@ package com.example.SpringBootForArchiveSch.model;
 
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "CLASSSAVETYPE")
 public class ClassSaveType {
 
-    private int classSaveId;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "CALSS_SAVE_ID", nullable = false)
+    private Long classSaveId;
+
+    @Column(name = "CLASSSAVE_AR_NAME", nullable = true)
     private String classSaveArName;
+
+    @Column(name = "CLASSSAVE_EN_NAME", nullable = true)
     private String classSaveEnName;
+
 
     public ClassSaveType() {
     }
 
-    public ClassSaveType(int classSaveId, String classSaveArName, String classSaveEnName) {
-        this.classSaveId = classSaveId;
-        this.classSaveArName = classSaveArName;
-        this.classSaveEnName = classSaveEnName;
-    }
-
-    public int getClassSaveId() {
-        return classSaveId;
-    }
-
-    public void setClassSaveId(int classSaveId) {
-        this.classSaveId = classSaveId;
-    }
-
-    public String getClassSaveArName() {
-        return classSaveArName;
-    }
-
-    public void setClassSaveArName(String classSaveArName) {
-        this.classSaveArName = classSaveArName;
-    }
-
-    public String getClassSaveEnName() {
-        return classSaveEnName;
-    }
-
-    public void setClassSaveEnName(String classSaveEnName) {
-        this.classSaveEnName = classSaveEnName;
-    }
 
     @Override
     public String toString() {

@@ -1,37 +1,24 @@
 package com.example.SpringBootForArchiveSch.model;
 
 
+import javax.persistence.*;
 
-//@Entity
-//@Table(name = "GROUP_PERMISSIONS")
+@Entity
+@Table(name = "GROUP_PERMISSIONS")
 public class GroupPermissions  {
-
-    private int groupId;
-    private int permissionId;
 
     public GroupPermissions() {
     }
 
-    public GroupPermissions(int groupId, int permissionId) {
-        this.groupId = groupId;
-        this.permissionId = permissionId;
-    }
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "GROUP_ID", nullable = false)
+    private Long groupId;
 
-    public int getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(int groupId) {
-        this.groupId = groupId;
-    }
-
-    public int getPermissionId() {
-        return permissionId;
-    }
-
-    public void setPermissionId(int permissionId) {
-        this.permissionId = permissionId;
-    }
+//    @Id
+//    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "PERMISSION_ID", nullable = false)
+    private Long permissionId;
 
     @Override
     public String toString() {

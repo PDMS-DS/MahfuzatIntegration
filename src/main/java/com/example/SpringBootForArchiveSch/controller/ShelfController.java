@@ -42,7 +42,6 @@ public class ShelfController {
                                                          @Valid @RequestBody Shelf shelfDetails) throws ResourceNotFoundException {
         Shelf shelf = shelfService.findById(shelfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shelf not found for this id :: " + shelfId));
-
         shelf.setLineId(shelfDetails.getLineId());
         shelf.setNameAr(shelfDetails.getNameAr());
         shelf.setNameEn(shelfDetails.getNameEn());

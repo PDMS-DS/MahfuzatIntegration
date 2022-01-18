@@ -1,76 +1,42 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "INVENTORY")
 public class Inventory {
 
-    private int inventoryId;
-    private String nameAr;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "INVENTORY_ID", nullable = false)
+    private Long inventoryId;
+
+
+    @Column(name = "NAME_AR", nullable = false)
+    private Long nameAr;
+
+    @Column(name = "NAME_EN", nullable = true)
     private String nameEr;
-    private int capacity;
-    private int centerId;
+
+    @Column(name = "CAPACITY", nullable = true)
+    private long capacity;
+
+    @Column(name = "CENTER_ID", nullable = true)
+    private long centerId;
+
+    @Column(name = "SERIAL", nullable = true )
     private long serial;
+
 
     public Inventory() {
     }
 
     public Inventory(int inventoryId, String nameAr, String nameEr, int capacity, int centerId, long serial) {
-        this.inventoryId = inventoryId;
-        this.nameAr = nameAr;
-        this.nameEr = nameEr;
-        this.capacity = capacity;
-        this.centerId = centerId;
-        this.serial = serial;
+
     }
 
-    public int getInventoryId() {
-        return inventoryId;
-    }
-
-    public void setInventoryId(int inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEr() {
-        return nameEr;
-    }
-
-    public void setNameEr(String nameEr) {
-        this.nameEr = nameEr;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public int getCenterId() {
-        return centerId;
-    }
-
-    public void setCenterId(int centerId) {
-        this.centerId = centerId;
-    }
-
-    public long getSerial() {
-        return serial;
-    }
-
-    public void setSerial(long serial) {
-        this.serial = serial;
-    }
 
     @Override
     public String toString() {

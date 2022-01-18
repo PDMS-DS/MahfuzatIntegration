@@ -2,35 +2,26 @@ package com.example.SpringBootForArchiveSch.model;
 
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "USERS_GROUPS")
 public class UsersGroups {
 
-    private int userId;
-    private int groupsId;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "USER_ID", nullable = false)
+    private Long userId;
+
+//    @Id
+//    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "GROUP_ID", nullable = false)
+    private Long groupsId;
+
+
+
 
     public UsersGroups() {
     }
 
-    public UsersGroups(int userId, int groupsId) {
-        this.userId = userId;
-        this.groupsId = groupsId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public int getGroupsId() {
-        return groupsId;
-    }
-
-    public void setGroupsId(int groupsId) {
-        this.groupsId = groupsId;
-    }
 
     @Override
     public String toString() {

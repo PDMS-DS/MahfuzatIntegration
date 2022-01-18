@@ -2,55 +2,31 @@ package com.example.SpringBootForArchiveSch.model;
 
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "CLASS_DEPT")
 public class ClassDept {
 
-    private int classificationId;
-    private int deptId;
-    private int savePeriod;
-    private int classSaveType;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "CLASSIFICATION_ID", nullable = false)
+    private Long classificationId;
+
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "DEPT_ID", nullable = false)
+    private Long deptId;
+
+    @Column(name = "SAVE_PERIOD", nullable = true)
+    private Long savePeriod;
+
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "CLASS_SAVE_TYPE", nullable = false)
+    private Long classSaveType;
+
+
 
     public ClassDept() {
     }
 
-    public ClassDept(int classificationId, int deptId, int savePeriod, int classSaveType) {
-        this.classificationId = classificationId;
-        this.deptId = deptId;
-        this.savePeriod = savePeriod;
-        this.classSaveType = classSaveType;
-    }
-
-    public int getClassificationId() {
-        return classificationId;
-    }
-
-    public void setClassificationId(int classificationId) {
-        this.classificationId = classificationId;
-    }
-
-    public int getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(int deptId) {
-        this.deptId = deptId;
-    }
-
-    public int getSavePeriod() {
-        return savePeriod;
-    }
-
-    public void setSavePeriod(int savePeriod) {
-        this.savePeriod = savePeriod;
-    }
-
-    public int getClassSaveType() {
-        return classSaveType;
-    }
-
-    public void setClassSaveType(int classSaveType) {
-        this.classSaveType = classSaveType;
-    }
 
     @Override
     public String toString() {

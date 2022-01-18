@@ -2,75 +2,36 @@ package com.example.SpringBootForArchiveSch.model;
 
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "LINE")
 public class Line {
 
-    private int lineId;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "LINE_ID", nullable = false)
+    private Long lineId;
+
+    @Column(name = "NAME_AR", nullable = true)
     private String nameAr;
+
+    @Column(name = "NAME_EN", nullable = true)
     private String nameEn;
-    private int inventoryId;
-    private int capacity;
-    private int serial;
+
+
+    @Column(name = "INVENTORY_ID", nullable = true)
+    private Long inventoryId;
+
+    @Column(name = "CAPACITY", nullable = true)
+    private Long capacity;
+
+    @Column(name = "SERIAL", nullable = true)
+    private Long serial;
+
+
 
     public Line() {
     }
 
-    public Line(int lineId, String nameAr, String nameEn, int inventoryId, int capacity, int serial) {
-        this.lineId = lineId;
-        this.nameAr = nameAr;
-        this.nameEn = nameEn;
-        this.inventoryId = inventoryId;
-        this.capacity = capacity;
-        this.serial = serial;
-    }
-
-    public int getLineId() {
-        return lineId;
-    }
-
-    public void setLineId(int lineId) {
-        this.lineId = lineId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEn() {
-        return nameEn;
-    }
-
-    public void setNameEn(String nameEn) {
-        this.nameEn = nameEn;
-    }
-
-    public int getInventoryId() {
-        return inventoryId;
-    }
-
-    public void setInventoryId(int inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public int getSerial() {
-        return serial;
-    }
-
-    public void setSerial(int serial) {
-        this.serial = serial;
-    }
 
     @Override
     public String toString() {

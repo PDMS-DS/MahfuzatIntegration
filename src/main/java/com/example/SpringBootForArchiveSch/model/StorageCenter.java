@@ -2,75 +2,34 @@ package com.example.SpringBootForArchiveSch.model;
 
 import javax.persistence.*;
 
-
+@Entity
+@Table(name = "STORAGE_CENTER")
 public class StorageCenter {
 
-    private int centerId;
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "CENTER_ID", nullable = false)
+    private Long centerId;
+
+    @Column(name = "NAME_AR", nullable = true)
     private String nameAr;
+
+    @Column(name = "NAME_EN", nullable = true)
     private String nameEn;
-    private boolean isActive;
+
+    @Column(name = "IS_ACTIVE", nullable = true)
+    private String isActive;
+
+    @Column(name = "CENTER_TYPE_ID", nullable = false)
     private int centerTypeId;
+
+    @Column(name = "DEPT_ID", nullable = true)
     private int deptId;
+
 
     public StorageCenter() {
     }
 
-    public StorageCenter(int centerId, String nameAr, String nameEn, boolean isActive, int centerTypeId, int deptId) {
-        this.centerId = centerId;
-        this.nameAr = nameAr;
-        this.nameEn = nameEn;
-        this.isActive = isActive;
-        this.centerTypeId = centerTypeId;
-        this.deptId = deptId;
-    }
-
-    public int getCenterId() {
-        return centerId;
-    }
-
-    public void setCenterId(int centerId) {
-        this.centerId = centerId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEn() {
-        return nameEn;
-    }
-
-    public void setNameEn(String nameEn) {
-        this.nameEn = nameEn;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public int getCenterTypeId() {
-        return centerTypeId;
-    }
-
-    public void setCenterTypeId(int centerTypeId) {
-        this.centerTypeId = centerTypeId;
-    }
-
-    public int getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(int deptId) {
-        this.deptId = deptId;
-    }
 
     @Override
     public String toString() {

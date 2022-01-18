@@ -29,7 +29,7 @@ public class Module {
 
     public Module(Long moduleId, String moduleNameAr, String moduleNameEn) {
         this.moduleId = moduleId;
-        this.moduleNameAr = moduleNameAr;
+            this.moduleNameAr = moduleNameAr;
         this.moduleNameEn = moduleNameEn;
     }
 
