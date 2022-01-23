@@ -23,8 +23,11 @@ public class Box {
     private String nameEn;
 
 
-//    @Column(name = "BOX_TYPE_ID", nullable = true)
-//    private int boxTypeId;
+    @Column(name = "BOX_TYPE_ID", nullable = true , insertable = false , updatable = false)
+    private Long boxTypeId;
+
+    @Column(name = "SHELF_ID", nullable = true , insertable = false , updatable = false)
+    private Long shelfId;
 
     @Column(name = "CAPACITY", nullable = true)
     private Long capacity;
@@ -133,6 +136,22 @@ public class Box {
 
     public void setBoxType(BoxType boxType) {
         this.boxType = boxType;
+    }
+
+    public Long getBoxTypeId() {
+        return boxTypeId;
+    }
+
+    public void setBoxTypeId(Long boxTypeId) {
+        this.boxTypeId = boxTypeId;
+    }
+
+    public Long getShelfId() {
+        return shelfId;
+    }
+
+    public void setShelfId(Long shelfId) {
+        this.shelfId = shelfId;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.Box;
+import com.example.SpringBootForArchiveSch.model.dto.BoxDto;
 import com.example.SpringBootForArchiveSch.repository.BoxRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,16 @@ public class BoxServiceImpl implements BoxService{
     }
 
     @Override
-    public Box save(Box theBox) {
+    public BoxDto save(Box theBox) {
+
         boxRepo.save(theBox);
-        return theBox;
+        BoxDto boxdto = new BoxDto();
+        boxdto.setCapacity(theBox.getCapacity());
+        boxdto.setNameAr(theBox.getNameAr());
+        boxdto.setSerial(theBox.getSerial());
+        boxdto.setNameEn(theBox.getNameEn());
+        boxdto.setBoxId(theBox.getBoxId());
+        return boxdto;
     }
 
     @Override

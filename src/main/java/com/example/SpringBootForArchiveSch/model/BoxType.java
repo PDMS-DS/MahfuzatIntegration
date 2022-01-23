@@ -22,7 +22,7 @@ public class BoxType {
     @Column(name = "BOX_TYPE_EN", nullable = true)
     private String boxTypeEn;
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy="boxType" , fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<Box> box ;

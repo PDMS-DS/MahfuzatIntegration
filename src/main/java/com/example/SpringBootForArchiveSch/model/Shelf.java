@@ -1,5 +1,6 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -13,9 +14,6 @@ public class Shelf {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "SHELF_ID", nullable = false)
     private Long shelfId;
-
-    @Column(name = "LINE_ID", nullable = true)
-    private int lineId;
 
     @Column(name = "NAME_AR", nullable = true)
     private String nameAr;
@@ -34,12 +32,16 @@ public class Shelf {
             cascade = CascadeType.ALL)
     private Set<Box> box ;
 
+    @JsonBackReference
+    @ManyToOne(fetch  = FetchType.EAGER)
+    @JoinColumn(name="LINE_ID", nullable=true)
+    private Line line;
+
     public Shelf() {
     }
 
-    public Shelf(Long shelfId, int lineId, String nameAr, String nameEn, int capacity, int serial) {
+    public Shelf(Long shelfId,  String nameAr, String nameEn, int capacity, int serial) {
         this.shelfId = shelfId;
-        this.lineId = lineId;
         this.nameAr = nameAr;
         this.nameEn = nameEn;
         this.capacity = capacity;
@@ -54,13 +56,7 @@ public class Shelf {
         this.shelfId = shelfId;
     }
 
-    public int getLineId() {
-        return lineId;
-    }
 
-    public void setLineId(int lineId) {
-        this.lineId = lineId;
-    }
 
     public String getNameAr() {
         return nameAr;
@@ -102,11 +98,18 @@ public class Shelf {
         this.box = box;
     }
 
+    public Line getLine() {
+        return line;
+    }
+
+    public void setLine(Line line) {
+        this.line = line;
+    }
+
     @Override
     public String toString() {
         return "Shelf{" +
                 "shelfId=" + shelfId +
-                ", lineId=" + lineId +
                 ", nameAr='" + nameAr + '\'' +
                 ", nameEn='" + nameEn + '\'' +
                 ", capacity=" + capacity +

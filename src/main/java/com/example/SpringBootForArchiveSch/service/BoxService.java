@@ -1,6 +1,7 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.Box;
+import com.example.SpringBootForArchiveSch.model.dto.BoxDto;
 
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface BoxService {
 
 //    public Optional<Box> findByIdAndShelfId(Long boxId , Long shelfId);
 
-    public Box save(Box theBox);
+    public BoxDto save(Box theBox);
 
     public void deleteById(Box theBox);
 

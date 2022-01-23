@@ -2,12 +2,16 @@ package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.StorageCenter;
 
+
+import com.example.SpringBootForArchiveSch.model.dto.StorageCenterDto;
 import com.example.SpringBootForArchiveSch.repository.StorageCenterRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class StorageCenterServiceImpl implements StorageCenterService{
 
     private final StorageCenterRepo storageCenterRepo;
@@ -28,9 +32,14 @@ public class StorageCenterServiceImpl implements StorageCenterService{
     }
 
     @Override
-    public StorageCenter save(StorageCenter theStorage) {
+    public StorageCenterDto save(StorageCenter theStorage) {
         storageCenterRepo.save(theStorage);
-        return theStorage;
+        StorageCenterDto storageCenterDto = new StorageCenterDto();
+        storageCenterDto.setCenterId(theStorage.getCenterId());
+        storageCenterDto.setNameEn(theStorage.getNameEn());
+        storageCenterDto.setNameAr(theStorage.getNameAr());
+        storageCenterDto.setActive(theStorage.isActive());
+        return storageCenterDto;
     }
 
     @Override

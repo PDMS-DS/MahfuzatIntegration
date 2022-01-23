@@ -5,6 +5,7 @@ import com.example.SpringBootForArchiveSch.exception.ResourceNotFoundException;
 import com.example.SpringBootForArchiveSch.model.Box;
 import com.example.SpringBootForArchiveSch.model.BoxType;
 import com.example.SpringBootForArchiveSch.model.Shelf;
+import com.example.SpringBootForArchiveSch.model.dto.BoxDto;
 import com.example.SpringBootForArchiveSch.service.BoxService;
 import com.example.SpringBootForArchiveSch.service.BoxTypeService;
 import com.example.SpringBootForArchiveSch.service.ShelfService;
@@ -42,8 +43,8 @@ public class BoxController {
     }
 
     @PostMapping("/box/{shelfId}/{boxTypeId}")
-    public ResponseEntity<Box> createBox(@PathVariable(value = "shelfId") Long shelfId , @PathVariable(value = "boxTypeId") Long boxTypeId
-            ,@Valid @RequestBody Box box) throws ResourceNotFoundException{
+    public ResponseEntity<BoxDto> createBox(@PathVariable(value = "shelfId") Long shelfId , @PathVariable(value = "boxTypeId") Long boxTypeId
+            , @Valid @RequestBody Box box) throws ResourceNotFoundException{
         if(boxTypeId != null ) {
             BoxType boxType = boxTypeService.findById(boxTypeId)
                     .orElseThrow(() -> new ResourceNotFoundException("boxTypeId not found for this id :: " + boxTypeId));
@@ -61,7 +62,7 @@ public class BoxController {
 
 
     @PutMapping("/box/{id}")
-    public ResponseEntity<Box> updateBox(@PathVariable(value = "id") Long boxId,
+    public ResponseEntity<BoxDto> updateBox(@PathVariable(value = "id") Long boxId,
                                                          @Valid @RequestBody Box boxDetails) throws ResourceNotFoundException {
         Box box = boxService.findById(boxId)
                 .orElseThrow(() -> new ResourceNotFoundException("Box not found for this id :: " + boxId));
@@ -72,7 +73,7 @@ public class BoxController {
         box.setSerial(boxDetails.getSerial());
         box.setDate(boxDetails.getDate());
 
-        final Box updatedBox = boxService.save(box);
+        final BoxDto updatedBox = boxService.save(box);
         return ResponseEntity.ok(updatedBox);
     }
 

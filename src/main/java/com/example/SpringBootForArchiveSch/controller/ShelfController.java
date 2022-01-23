@@ -2,7 +2,9 @@ package com.example.SpringBootForArchiveSch.controller;
 
 
 import com.example.SpringBootForArchiveSch.exception.ResourceNotFoundException;
+import com.example.SpringBootForArchiveSch.model.Line;
 import com.example.SpringBootForArchiveSch.model.Shelf;
+import com.example.SpringBootForArchiveSch.service.LineService;
 import com.example.SpringBootForArchiveSch.service.ShelfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +17,13 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class ShelfController {
 
+
+
     @Autowired
     private ShelfService shelfService;
+
+    @Autowired
+    private LineService lineService;
 
     @GetMapping("/shelf")
     public List<Shelf> getAllShelves() {
@@ -31,8 +38,14 @@ public class ShelfController {
         return ResponseEntity.ok().body(shelf);
     }
 
-    @PostMapping("/shelf")
-    public ResponseEntity<Shelf> createShelf(@Valid @RequestBody Shelf shelf) {
+    @PostMapping("/shelf/{lineId}")
+    public ResponseEntity<Shelf> createShelf(@PathVariable(value = "lineId") Long lineId , @Valid @RequestBody Shelf shelf) throws ResourceNotFoundException {
+        if(lineId != null ) {
+            Line line = lineService.findById(lineId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Line not found for this id :: " + lineId));
+            shelf.setLine(line);
+
+        }
         return ResponseEntity.ok().body(shelfService.save(shelf));
     }
 
@@ -42,7 +55,6 @@ public class ShelfController {
                                                          @Valid @RequestBody Shelf shelfDetails) throws ResourceNotFoundException {
         Shelf shelf = shelfService.findById(shelfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shelf not found for this id :: " + shelfId));
-        shelf.setLineId(shelfDetails.getLineId());
         shelf.setNameAr(shelfDetails.getNameAr());
         shelf.setNameEn(shelfDetails.getNameEn());
         shelf.setCapacity(shelfDetails.getCapacity());

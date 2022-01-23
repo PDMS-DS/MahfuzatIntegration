@@ -1,12 +1,15 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.Line;
+import com.example.SpringBootForArchiveSch.model.dto.LineDto;
 import com.example.SpringBootForArchiveSch.repository.LineRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class LineServiceImpl implements LineService {
 
     private LineRepo lineRepo;
@@ -19,21 +22,29 @@ public class LineServiceImpl implements LineService {
 
     @Override
     public List<Line> findAll() {
-        return null;
+        return lineRepo.findAll();
     }
 
     @Override
     public Optional<Line> findById(Long theId) {
-        return Optional.empty();
+        return lineRepo.findById(theId);
     }
 
     @Override
-    public Line save(Line theLine) {
-        return null;
+    public LineDto save(Line theLine) {
+        lineRepo.save(theLine);
+        LineDto lineDto = new LineDto();
+        lineDto.setLineId(theLine.getLineId());
+        lineDto.setCapacity(theLine.getCapacity());
+        lineDto.setNameAr(theLine.getNameAr());
+        lineDto.setNameEn(theLine.getNameEn());
+        lineDto.setSerial(theLine.getSerial());
+        return lineDto;
     }
 
     @Override
     public void deleteById(Line theLine) {
+        lineRepo.delete(theLine);
 
     }
 }
