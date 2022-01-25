@@ -1,7 +1,7 @@
 package com.example.SpringBootForArchiveSch.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -32,17 +32,17 @@ public class StorageCenter {
     @Column(name = "DEPT_ID", nullable = true , insertable = false , updatable = false)
     private Long deptId;
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy="storageCenter" , fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<Inventory> inventory ;
 
-    @JsonBackReference
+    @JsonIgnore
     @ManyToOne(fetch  = FetchType.EAGER)
     @JoinColumn(name="DEPT_ID", nullable=true)
     private Departments departments;
 
-    @JsonBackReference
+    @JsonIgnore
     @ManyToOne(fetch  = FetchType.EAGER)
     @JoinColumn(name="CENTER_TYPE_ID", nullable=true)
     private StorageCenterType storageCenterType;
@@ -105,6 +105,23 @@ public class StorageCenter {
     public void setInventory(Set<Inventory> inventory) {
         this.inventory = inventory;
     }
+
+    public Departments getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(Departments departments) {
+        this.departments = departments;
+    }
+
+    public StorageCenterType getStorageCenterType() {
+        return storageCenterType;
+    }
+
+    public void setStorageCenterType(StorageCenterType storageCenterType) {
+        this.storageCenterType = storageCenterType;
+    }
+
 
     @Override
     public String toString() {

@@ -1,13 +1,14 @@
 package com.example.SpringBootForArchiveSch.service;
 
-import com.example.SpringBootForArchiveSch.model.Audit;
 import com.example.SpringBootForArchiveSch.model.Departments;
+import com.example.SpringBootForArchiveSch.model.dto.DepartmentsDto;
 import com.example.SpringBootForArchiveSch.repository.DepartmentsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+@Service
 public class DepartmentsServiceImpl implements DepartmentsService{
 
     private DepartmentsRepo departmentsRepo ;
@@ -19,21 +20,29 @@ public class DepartmentsServiceImpl implements DepartmentsService{
 
     @Override
     public List<Departments> findAll() {
-        return null;
+        return departmentsRepo.findAll();
     }
 
     @Override
     public Optional<Departments> findById(Long theId) {
-        return Optional.empty();
+        return departmentsRepo.findById(theId);
     }
 
     @Override
-    public Departments save(Departments theDepartments) {
-        return null;
+    public DepartmentsDto save(Departments theDepartments) {
+
+        departmentsRepo.save(theDepartments);
+        DepartmentsDto departmentsDto = new DepartmentsDto();
+        departmentsDto.setDeptArName(theDepartments.getDeptArName());
+        departmentsDto.setDeptCode(theDepartments.getDeptCode());
+        departmentsDto.setDeptId(theDepartments.getDeptId());
+        departmentsDto.setDeptEnName(theDepartments.getDeptEnName());
+        departmentsDto.setEnabled(theDepartments.isEnabled());
+        return departmentsDto;
     }
 
     @Override
-    public void deleteById(Audit theDepartments) {
-
+    public void deleteById(Departments theDepartments) {
+        departmentsRepo.delete(theDepartments);
     }
 }

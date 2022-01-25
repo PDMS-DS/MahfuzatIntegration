@@ -154,6 +154,28 @@ public class Box {
         this.shelfId = shelfId;
     }
 
+    public String getPath(){
+        String shelfName  = null;
+        String lineName  = null;
+        String path = null;
+        if(shelf != null){
+             shelfName = shelf.getNameAr();
+            if(shelf.getLine() != null) {
+                Line line = shelf.getLine();
+                lineName =  line.getNameAr();
+            }
+        }
+        if(lineName != null){
+            path = lineName + "/" + shelfName + "/" + this.getNameAr();
+            return path;
+        }
+        else if(shelfName != null){
+            path =  shelfName + "/" + this.getNameAr();
+            return path;
+        }
+        return path;
+    }
+
     @Override
     public String toString() {
         return "Box{" +

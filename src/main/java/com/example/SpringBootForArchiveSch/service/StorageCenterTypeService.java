@@ -1,15 +1,17 @@
 package com.example.SpringBootForArchiveSch.service;
 
+import com.example.SpringBootForArchiveSch.model.StorageCenterType;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface StorageCenterTypeService {
 
-    public List<StorageCenterTypeService> findAll();
+    public List<StorageCenterType> findAll();
 
-    public Optional<StorageCenterTypeService> findById(Long theStorageCenterTypeService);
+    public Optional<StorageCenterType> findById(Long theStorageCenterTypeId);
 
-    public StorageCenterTypeService save(StorageCenterTypeService theStorageCenterTypeService);
+    public StorageCenterType save(StorageCenterType theStorageCenterTypeId);
 
-    public void deleteById(StorageCenterTypeService theStorageCenterTypeService);
+    public void deleteById(StorageCenterType theStorageCenterTypeId);
 }

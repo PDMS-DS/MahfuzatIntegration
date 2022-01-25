@@ -1,6 +1,7 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.StorageCenter;
+import com.example.SpringBootForArchiveSch.model.StorageCenterType;
 import com.example.SpringBootForArchiveSch.repository.StorageCenterTypeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,24 +19,24 @@ public class StorageCenterTypeServiceImpl implements StorageCenterTypeService{
         this.storageCenterTypeRepo = storageCenterTypeRepo;
     }
 
-
     @Override
-    public List<StorageCenterTypeService> findAll() {
-        return null;
+    public List<StorageCenterType> findAll() {
+        return storageCenterTypeRepo.findAll();
     }
 
     @Override
-    public Optional<StorageCenterTypeService> findById(Long theStorageCenterTypeService) {
-        return Optional.empty();
+    public Optional<StorageCenterType> findById(Long theStorageCenterTypeId) {
+        return storageCenterTypeRepo.findById(theStorageCenterTypeId);
     }
 
     @Override
-    public StorageCenterTypeService save(StorageCenterTypeService theStorageCenterTypeService) {
-        return null;
+    public StorageCenterType save(StorageCenterType theStorageCenterTypeId) {
+        storageCenterTypeRepo.save(theStorageCenterTypeId);
+        return theStorageCenterTypeId;
     }
 
     @Override
-    public void deleteById(StorageCenterTypeService theStorageCenterTypeService) {
-
+    public void deleteById(StorageCenterType theStorageCenterTypeId) {
+        storageCenterTypeRepo.delete(theStorageCenterTypeId);
     }
 }
