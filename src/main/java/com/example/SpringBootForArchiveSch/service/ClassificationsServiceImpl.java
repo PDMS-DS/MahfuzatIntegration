@@ -3,10 +3,12 @@ package com.example.SpringBootForArchiveSch.service;
 import com.example.SpringBootForArchiveSch.model.Classifications;
 import com.example.SpringBootForArchiveSch.repository.ClassificationsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class ClassificationsServiceImpl implements ClassificationsService{
 
     private ClassificationsRepo classificationsRepo ;
@@ -19,21 +21,22 @@ public class ClassificationsServiceImpl implements ClassificationsService{
 
     @Override
     public List<Classifications> findAll() {
-        return null;
+        return classificationsRepo.findAll();
     }
 
     @Override
     public Optional<Classifications> findById(Long theId) {
-        return Optional.empty();
+        return classificationsRepo.findById(theId);
     }
 
     @Override
     public Classifications save(Classifications theClassifications) {
-        return null;
+        classificationsRepo.save(theClassifications);
+        return theClassifications;
     }
 
     @Override
     public void deleteById(Classifications theClassifications) {
-
+        classificationsRepo.delete(theClassifications);
     }
 }

@@ -1,12 +1,17 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.Folder;
+import com.example.SpringBootForArchiveSch.model.dto.BoxDto;
+import com.example.SpringBootForArchiveSch.model.dto.FolderDto;
 import com.example.SpringBootForArchiveSch.repository.FolderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class FolderServiceImpl implements FolderService{
 
     private FolderRepo folderRepo ;
@@ -19,21 +24,31 @@ public class FolderServiceImpl implements FolderService{
 
     @Override
     public List<Folder> findAll() {
-        return null;
+        return folderRepo.findAll();
     }
 
     @Override
     public Optional<Folder> findById(Long theId) {
-        return Optional.empty();
+        return folderRepo.findById(theId);
     }
 
     @Override
-    public Folder save(Folder theFolder) {
-        return null;
+    public FolderDto save(Folder theFolder) {
+        theFolder.setAddedOn(new Date());
+        folderRepo.save(theFolder);
+        FolderDto folderDto = new FolderDto();
+        folderDto.setFolderId(theFolder.getFolderId());
+        folderDto.setCapacity(theFolder.getCapacity());
+        folderDto.setNameAr(theFolder.getNameAr());
+        folderDto.setSerial(theFolder.getSerial());
+        folderDto.setNameEn(theFolder.getNameEn());
+        folderDto.setBoxId(theFolder.getBoxId());
+        folderDto.setAddedOn(theFolder.getAddedOn());
+        return folderDto;
     }
 
     @Override
     public void deleteById(Folder theFolder) {
-
+        folderRepo.delete(theFolder);
     }
 }

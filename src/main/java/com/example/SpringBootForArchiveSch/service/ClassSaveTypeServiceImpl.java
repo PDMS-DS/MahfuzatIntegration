@@ -1,7 +1,9 @@
 package com.example.SpringBootForArchiveSch.service;
 
 import com.example.SpringBootForArchiveSch.model.ClassDept;
+import com.example.SpringBootForArchiveSch.model.ClassSaveType;
 import com.example.SpringBootForArchiveSch.repository.ClassDeptRepo;
+import com.example.SpringBootForArchiveSch.repository.ClassSaveTypeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,33 +11,33 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ClassSaveTypeServiceImpl implements ClassDeptService{
+public class ClassSaveTypeServiceImpl implements ClassSaveTypeService{
 
-    private ClassDeptRepo classDeptRepo ;
+    private ClassSaveTypeRepo classSaveTypeRepo ;
 
     @Autowired
-    public ClassSaveTypeServiceImpl(ClassDeptRepo classDeptRepo) {
-        this.classDeptRepo = classDeptRepo;
-    }
-
-
-    @Override
-    public List<ClassDept> findAll() {
-        return null;
+    public ClassSaveTypeServiceImpl(ClassSaveTypeRepo classSaveTypeRepo) {
+        this.classSaveTypeRepo = classSaveTypeRepo;
     }
 
     @Override
-    public Optional<ClassDept> findById(Long theId) {
-        return Optional.empty();
+    public List<ClassSaveType> findAll() {
+        return classSaveTypeRepo.findAll();
     }
 
     @Override
-    public ClassDept save(ClassDept theClassDept) {
-        return null;
+    public Optional<ClassSaveType> findById(Long theId) {
+        return classSaveTypeRepo.findById(theId);
     }
 
     @Override
-    public void deleteById(ClassDept theClassDept) {
+    public ClassSaveType save(ClassSaveType theClassSaveType) {
+        classSaveTypeRepo.save(theClassSaveType);
+        return theClassSaveType;
+    }
 
+    @Override
+    public void deleteById(ClassSaveType theClassSaveType) {
+        classSaveTypeRepo.delete(theClassSaveType);
     }
 }

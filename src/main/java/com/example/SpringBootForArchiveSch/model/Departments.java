@@ -1,5 +1,6 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -28,10 +29,15 @@ public class Departments {
     @Column(name = "DEPT_CODE", nullable = true)
     private Long deptCode;
 
-
+    @JsonManagedReference
     @OneToMany(mappedBy="departments" , fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<StorageCenter> storageCenter ;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy="departments" , fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL)
+    private Set<ClassDept> classDept ;
 
 
     public Departments() {
@@ -83,5 +89,13 @@ public class Departments {
 
     public void setStorageCenter(Set<StorageCenter> storageCenter) {
         this.storageCenter = storageCenter;
+    }
+
+    public Set<ClassDept> getClassDept() {
+        return classDept;
+    }
+
+    public void setClassDept(Set<ClassDept> classDept) {
+        this.classDept = classDept;
     }
 }
