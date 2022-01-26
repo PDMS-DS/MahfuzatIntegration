@@ -1,6 +1,6 @@
 package com.example.SpringBootForArchiveSch.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -10,9 +10,9 @@ import java.util.Set;
 public class ClassSaveType {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy=GenerationType.AUTO)
     @Column(name = "CALSS_SAVE_ID", nullable = false)
-    private Long classSaveId;
+    private Long calssSaveId;
 
     @Column(name = "CLASSSAVE_AR_NAME", nullable = true)
     private String classSaveArName;
@@ -20,7 +20,8 @@ public class ClassSaveType {
     @Column(name = "CLASSSAVE_EN_NAME", nullable = true)
     private String classSaveEnName;
 
-    @JsonManagedReference
+
+    @JsonIgnore
     @OneToMany(mappedBy="classSaveType" , fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<ClassDept> classDept ;
@@ -28,12 +29,19 @@ public class ClassSaveType {
     public ClassSaveType() {
     }
 
-    public Long getClassSaveId() {
-        return classSaveId;
+    public ClassSaveType(Long calssSaveId, String classSaveArName, String classSaveEnName, Set<ClassDept> classDept) {
+        this.calssSaveId = calssSaveId;
+        this.classSaveArName = classSaveArName;
+        this.classSaveEnName = classSaveEnName;
+        this.classDept = classDept;
     }
 
-    public void setClassSaveId(Long classSaveId) {
-        this.classSaveId = classSaveId;
+    public Long getCalssSaveId() {
+        return calssSaveId;
+    }
+
+    public void setCalssSaveId(Long calssSaveId) {
+        this.calssSaveId = calssSaveId;
     }
 
     public String getClassSaveArName() {
@@ -58,14 +66,5 @@ public class ClassSaveType {
 
     public void setClassDept(Set<ClassDept> classDept) {
         this.classDept = classDept;
-    }
-
-    @Override
-    public String toString() {
-        return "ClassSaveType{" +
-                "classSaveId=" + classSaveId +
-                ", classSaveArName='" + classSaveArName + '\'' +
-                ", classSaveEnName='" + classSaveEnName + '\'' +
-                '}';
     }
 }

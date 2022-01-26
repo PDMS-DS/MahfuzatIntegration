@@ -35,6 +35,7 @@ public class ClassDept {
 //    @Column(name = "DEPT_ID", nullable = false)
 //    private Long deptId;
 
+
     @JsonBackReference
     @ManyToOne(fetch  = FetchType.EAGER)
     @MapsId("classSaveTypeId")
