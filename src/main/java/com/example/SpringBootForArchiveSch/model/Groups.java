@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -42,10 +44,23 @@ public class Groups {
             name = "GROUP_PERMISSIONS",
             joinColumns = @JoinColumn(name = "GROUP_ID"),
             inverseJoinColumns = @JoinColumn(name = "PERMISSION_ID"))
-    Set<Permissions> permissionsG;
+    Set<Permissions> permissionsG = new HashSet<>();
 
+//    @ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {
+//                    CascadeType.ALL
+//            },mappedBy = "groups")
+//    Set<Users> users = new HashSet<>();
+//
+//    public Set<Users> getUsers() {
+//		return users;
+//	}
+//
+//	public void setUsers(Set<Users> users) {
+//		this.users = users;
+//	}
 
-    public Groups() {
+	public Groups() {
     }
 
     public Groups(Long groupId, String groupArName, String groupEnName, String groupLdap, boolean enabled, boolean active) {

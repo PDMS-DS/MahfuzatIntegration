@@ -19,8 +19,8 @@ public class PrintAudit {
     private String userId;
 
 
-    @Column(name = "MODULE_ID", nullable = true)
-    private Long moduleId;
+//    @Column(name = "MODULE_ID", nullable = true)
+//    private Long moduleId;
 
     @Column(name = "ACTION_TYPE_ID", nullable = true)
     private Long actionTypeId;
@@ -52,7 +52,7 @@ public class PrintAudit {
                 "printAuditId=" + printAuditId +
                 ", transactionDate=" + transactionDate +
                 ", userId=" + userId +
-                ", moduleId=" + moduleId +
+//                ", moduleId=" + moduleId +
                 ", actionTypeId=" + actionTypeId +
                 ", numberOfPrints=" + numberOfPrints +
                 ", reason='" + reason + '\'' +

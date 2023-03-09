@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "DEPARTMENTS")
 public class Departments {
-
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -27,7 +28,7 @@ public class Departments {
     private boolean enabled;
 
     @Column(name = "DEPT_CODE", nullable = true)
-    private Long deptCode;
+    private String deptCode;
 
     @JsonManagedReference
     @OneToMany(mappedBy="departments" , fetch = FetchType.LAZY,
@@ -39,8 +40,18 @@ public class Departments {
             cascade = CascadeType.ALL)
     private Set<ClassDept> classDept ;
 
+//    @ManyToMany(mappedBy = "depts")
+//    Set<Users> users = new HashSet<>();
+//
+//    public Set<Users> getUsers() {
+//		return users;
+//	}
+//
+//	public void setUsers(Set<Users> users) {
+//		this.users = users;
+//	}
 
-    public Departments() {
+	public Departments() {
     }
 
     public Long getDeptId() {
@@ -75,11 +86,11 @@ public class Departments {
         this.enabled = enabled;
     }
 
-    public Long getDeptCode() {
+    public String getDeptCode() {
         return deptCode;
     }
 
-    public void setDeptCode(Long deptCode) {
+    public void setDeptCode(String deptCode) {
         this.deptCode = deptCode;
     }
 

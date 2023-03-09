@@ -5,7 +5,7 @@ public class DepartmentsDto {
     private String deptArName;
     private String deptEnName;
     private boolean enabled;
-    private Long deptCode;
+    private String deptCode;
 
     public Long getDeptId() {
         return deptId;
@@ -39,11 +39,11 @@ public class DepartmentsDto {
         this.enabled = enabled;
     }
 
-    public Long getDeptCode() {
+    public String getDeptCode() {
         return deptCode;
     }
 
-    public void setDeptCode(Long deptCode) {
+    public void setDeptCode(String deptCode) {
         this.deptCode = deptCode;
     }
 }

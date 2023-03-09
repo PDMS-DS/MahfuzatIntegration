@@ -8,7 +8,7 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "BOX_Type")
+@Table(name = "BOX_TYPE")
 public class BoxType {
 
     @Id

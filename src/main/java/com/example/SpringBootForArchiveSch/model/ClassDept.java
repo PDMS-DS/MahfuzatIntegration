@@ -1,12 +1,18 @@
 package com.example.SpringBootForArchiveSch.model;
 
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
+import javax.persistence.Table;
+
 import com.example.SpringBootForArchiveSch.model.keys.ClassDeptKeys;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
 @Table(name = "CLASS_DEPT")
@@ -23,8 +29,6 @@ public class ClassDept {
     @JoinColumn(name = "CLASSIFICATION_ID")
     private Classifications classifications;
 
-//    @Column(name = "CLASSIFICATION_ID", nullable = false)
-//    private Long classificationId;
 
     @JsonBackReference
     @ManyToOne(fetch  = FetchType.EAGER)
@@ -32,19 +36,7 @@ public class ClassDept {
     @JoinColumn(name = "DEPT_ID")
     private Departments departments;
 
-//    @Column(name = "DEPT_ID", nullable = false)
-//    private Long deptId;
 
-
-    @JsonBackReference
-    @ManyToOne(fetch  = FetchType.EAGER)
-    @MapsId("classSaveTypeId")
-    @JoinColumn(name = "CLASS_SAVE_TYPE")
-    private ClassSaveType classSaveType;
-
-
-//    @Column(name = "CLASS_SAVE_TYPE", nullable = false)
-//    private Long classSaveType;
 
 
     @Column(name = "SAVE_PERIOD", nullable = true)
@@ -78,13 +70,6 @@ public class ClassDept {
         this.departments = departments;
     }
 
-    public ClassSaveType getClassSaveType() {
-        return classSaveType;
-    }
-
-    public void setClassSaveType(ClassSaveType classSaveType) {
-        this.classSaveType = classSaveType;
-    }
 
     public Long getSavePeriod() {
         return savePeriod;
@@ -99,11 +84,11 @@ public class ClassDept {
         if (this == o) return true;
         if (!(o instanceof ClassDept)) return false;
         ClassDept classDept = (ClassDept) o;
-        return getClassDeptKeys().equals(classDept.getClassDeptKeys()) && getClassifications().equals(classDept.getClassifications()) && getDepartments().equals(classDept.getDepartments()) && getClassSaveType().equals(classDept.getClassSaveType()) && Objects.equals(getSavePeriod(), classDept.getSavePeriod());
+        return getClassDeptKeys().equals(classDept.getClassDeptKeys()) && getClassifications().equals(classDept.getClassifications()) && getDepartments().equals(classDept.getDepartments())  && Objects.equals(getSavePeriod(), classDept.getSavePeriod());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClassDeptKeys(), getClassifications(), getDepartments(), getClassSaveType(), getSavePeriod());
+        return Objects.hash(getClassDeptKeys(), getClassifications(), getDepartments(),  getSavePeriod());
     }
 }

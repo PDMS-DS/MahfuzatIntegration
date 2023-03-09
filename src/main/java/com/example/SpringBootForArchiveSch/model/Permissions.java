@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -49,7 +51,7 @@ public class Permissions {
             cascade = {
                     CascadeType.ALL
             },mappedBy = "permissionsG")
-    Set<Groups> groups;
+    Set<Groups> groups = new HashSet<>();
 
 
     public Permissions(Long permissionID, String permissionArName, String permissionEnName, String permissionDescription, boolean enabled, Module module, ActionTypes actionTypes) {

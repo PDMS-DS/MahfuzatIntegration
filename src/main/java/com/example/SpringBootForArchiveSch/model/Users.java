@@ -2,8 +2,10 @@ package com.example.SpringBootForArchiveSch.model;
 
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.*;
 @Entity
 @Table(name = "USERS")
 public class Users {
@@ -11,25 +13,26 @@ public class Users {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "STORAGE_CENTER_TYPE_ID", nullable = false)
-    private Long storageCenterTypeId;
-
-    @Column(name = "TYPE_AR", nullable = true)
-    private String typeAr;
-
-    @Column(name = "TYPE_EN", nullable = true)
-    private String typeEn;
-
-
+    @Column(name = "USER_ID", nullable = false)
     private Long userId;
+
+    @Column(name = "UserArname", nullable = true)
     private String userArName;
+    
+    @Column(name = "UserEnName", nullable = true)
     private String userEnName;
 
-
+    @Column(name = "UsernameLDAP", nullable = true)
     private String userNameLdap;
+    
+    @Column(name = "IsLogin", nullable = true )
+    @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isLogin;
+    
+    @Column(name = "IsActive", nullable = true )
+    @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isActive;
-
+    
     public Users() {
     }
 
@@ -42,18 +45,57 @@ public class Users {
         this.isActive = isActive;
     }
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "USER_ID", nullable = false)
+//    
+//    @ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {
+//                    CascadeType.ALL
+//            })
+//    @JoinTable(
+//            name = "USER_DEPARTMENT",
+//            joinColumns = @JoinColumn(name = "USER_ID"),
+//            inverseJoinColumns = @JoinColumn(name = "DEPARTMENT_ID"))
+//    Set<Departments> depts = new HashSet<>();
+
+    
+//    @ManyToMany(fetch = FetchType.LAZY,
+//            cascade = {
+//                    CascadeType.ALL
+//            })
+//    @JoinTable(
+//            name = "USER_GROUPS",
+//            joinColumns = @JoinColumn(name = "USER_ID"),
+//            inverseJoinColumns = @JoinColumn(name = "GROUP_ID"))
+//    Set<Groups> groups = new HashSet<>();
+// 
+  
+
+//	public Set<Departments> getDepts() {
+//		return depts;
+//	}
+//
+//	public void setDepts(Set<Departments> depts) {
+//		this.depts = depts;
+//	}
+//
+//	public Set<Groups> getGroups() {
+//		return groups;
+//	}
+//
+//	public void setGroups(Set<Groups> groups) {
+//		this.groups = groups;
+//	}
+
+	
+    
     public Long getUserId() {
         return userId;
     }
-
+    
     public void setUserId(Long userId) {
         this.userId = userId;
     }
 
-    @Column(name = "UserArname", nullable = true)
+   
     public String getUserArName() {
         return userArName;
     }
@@ -62,7 +104,7 @@ public class Users {
         this.userArName = userArName;
     }
 
-    @Column(name = "UserEnName", nullable = true)
+    
     public String getUserEnName() {
         return userEnName;
     }
@@ -71,7 +113,7 @@ public class Users {
         this.userEnName = userEnName;
     }
 
-    @Column(name = "UsernameLDAP", nullable = true)
+    
     public String getUserNameLdap() {
         return userNameLdap;
     }
@@ -80,8 +122,7 @@ public class Users {
         this.userNameLdap = userNameLdap;
     }
 
-    @Column(name = "IsLogin", nullable = true )
-    @Type(type = "org.hibernate.type.NumericBooleanType")
+   
     public boolean isLogin() {
         return isLogin;
     }
@@ -90,8 +131,7 @@ public class Users {
         isLogin = login;
     }
 
-    @Column(name = "IsActive", nullable = true )
-    @Type(type = "org.hibernate.type.NumericBooleanType")
+    
     public boolean isActive() {
         return isActive;
     }
