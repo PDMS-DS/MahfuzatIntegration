@@ -13,7 +13,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/physicalArchive")
 public class PermissionsController {
     @Autowired
     private PermissionsService permissionsService;

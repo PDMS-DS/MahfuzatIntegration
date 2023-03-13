@@ -25,13 +25,14 @@ import com.dataserve.archivemanagement.model.LoginRequest;
 import com.dataserve.archivemanagement.model.UserDTO;
 import com.dataserve.archivemanagement.model.Users;
 import com.dataserve.archivemanagement.model.UsersGroups;
+import com.dataserve.archivemanagement.model.dto.response.UserResponse;
 import com.dataserve.archivemanagement.repository.GroupsRepo;
 import com.dataserve.archivemanagement.repository.UsersGroupsRepo;
 import com.dataserve.archivemanagement.repository.UsersRepo;
 import com.dataserve.archivemanagement.service.UserService;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/physicalArchive")
 public class UserController {
 
 	@Autowired
@@ -45,11 +46,10 @@ public class UserController {
 	
 	@Autowired
 	private GroupsRepo groupRepo;
-	
-	
+
 	@GetMapping("/user")
-	public List<Users> getAllModule() {
-		return userService.findAll();
+	public ResponseEntity<UserResponse> getAllModule() {
+		return  ResponseEntity.ok(userService.listUsers());
 	}
 
 	@GetMapping("/user/{id}")

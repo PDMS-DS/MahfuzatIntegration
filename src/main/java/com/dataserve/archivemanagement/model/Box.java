@@ -36,8 +36,8 @@ public class Box {
     @Column(name = "ADDED_ON", nullable = true)
     private Date addedOn;
 
-    @Column(name = "SERIAL", nullable = true)
-    private int serial;
+    @Column(name = "SERIAL", nullable = false)
+    private Long serial;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "DATE", nullable = true)
@@ -56,7 +56,7 @@ public class Box {
     public Box() {
     }
 
-    public Box(Long boxId, String nameAr, String nameEn,  Long capacity, Date addedOn, int serial, Date date) {
+    public Box(Long boxId, String nameAr, String nameEn,  Long capacity, Date addedOn, Long serial, Date date) {
         this.boxId = boxId;
         this.nameAr = nameAr;
         this.nameEn = nameEn;
@@ -106,11 +106,11 @@ public class Box {
         this.addedOn = addedOn;
     }
 
-    public int getSerial() {
+    public Long getSerial() {
         return serial;
     }
 
-    public void setSerial(int serial) {
+    public void setSerial(Long serial) {
         this.serial = serial;
     }
 

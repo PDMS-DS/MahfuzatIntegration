@@ -12,7 +12,7 @@ package com.dataserve.archivemanagement.controller;
 //import java.util.List;
 //
 //@RestController
-//@RequestMapping("/api/v1")
+//@RequestMapping("/physicalArchive")
 //public class ClassSaveTypeController {
 //
 //

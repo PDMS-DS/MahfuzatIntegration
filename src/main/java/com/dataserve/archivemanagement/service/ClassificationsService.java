@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import com.dataserve.archivemanagement.model.Classifications;
+import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
 
 public interface ClassificationsService {
 
-    public List<Classifications> findAll();
+    public ClassificationResponse listClassifications();
 
     public Optional<Classifications> findById(Long theId);
 

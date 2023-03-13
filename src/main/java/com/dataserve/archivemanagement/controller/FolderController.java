@@ -1,28 +1,24 @@
 package com.dataserve.archivemanagement.controller;
 
-import com.dataserve.archivemanagement.exception.ResourceNotFoundException;
-import com.dataserve.archivemanagement.model.*;
-import com.dataserve.archivemanagement.model.dto.BoxDto;
-import com.dataserve.archivemanagement.model.dto.FolderDto;
-import com.dataserve.archivemanagement.service.ClassificationsService;
-import com.dataserve.archivemanagement.service.FolderService;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.util.List;
+import com.dataserve.archivemanagement.model.Folder;
+import com.dataserve.archivemanagement.model.dto.response.FolderResponse;
+import com.dataserve.archivemanagement.service.FolderService;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/physicalArchive")
 public class FolderController {
 
     @Autowired
     private FolderService folderService;
-
-    @Autowired
-    private ClassificationsService classificationsService;
 
     @GetMapping("/folder")
     public List<Folder> getAllFolders() {
@@ -30,49 +26,14 @@ public class FolderController {
     }
 
     @GetMapping("/folder/{id}")
-    public ResponseEntity<Folder> getFolderById(@PathVariable(value = "id") Long folderId)
-            throws ResourceNotFoundException {
-        Folder folder = folderService.findById(folderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Folder not found for this id :: " + folderId));
-        return ResponseEntity.ok().body(folder);
+    public ResponseEntity<FolderResponse> getFolderById(@PathVariable(value = "id") Long folderId)
+          {
+        return ResponseEntity.ok(folderService.findById(folderId));
     }
 
-    @PostMapping("/folder/{classificationId}")
-    public ResponseEntity<FolderDto> createFolder(@PathVariable(value = "classificationId") Long classificationId
-            , @Valid @RequestBody Folder folder) throws ResourceNotFoundException{
-        if(classificationId != null ) {
-            Classifications classifications = classificationsService.findById(classificationId)
-                    .orElseThrow(() -> new ResourceNotFoundException("classifications not found for this id :: " + classificationId));
-            folder.setClassifications(classifications);
-
-        }
-        return ResponseEntity.ok().body(folderService.save(folder));
-    }
-
-
-    @PutMapping("/folder/{id}")
-    public ResponseEntity<FolderDto> updateFolder(@PathVariable(value = "id") Long folderId,
-                                            @Valid @RequestBody Folder folderDetails) throws ResourceNotFoundException {
-        Folder folder = folderService.findById(folderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Folder not found for this id :: " + folderId));
-
-        folder.setNameAr(folderDetails.getNameAr());
-        folder.setNameEn(folderDetails.getNameEn());
-        folder.setCapacity(folderDetails.getCapacity());
-        folder.setSerial(folderDetails.getSerial());
-        folder.setBoxId(folderDetails.getBoxId());
-
-        final FolderDto updatedFolder = folderService.save(folder);
-        return ResponseEntity.ok(updatedFolder);
-    }
-
-    @DeleteMapping("/folder/{id}")
-    public ResponseEntity deleteActionType(@PathVariable(value = "id") Long folderId)
-            throws ResourceNotFoundException {
-        Folder folder = folderService.findById(folderId)
-                .orElseThrow(() -> new ResourceNotFoundException("folder not found for this id :: " + folderId));
-        folderService.deleteById(folder);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/folder/serial/{serial}")
+    public ResponseEntity<FolderResponse> getFolderBySerial(@PathVariable(value = "serial") Long serial) {
+        return ResponseEntity.ok(folderService.findBySerial(serial));
     }
 
 }

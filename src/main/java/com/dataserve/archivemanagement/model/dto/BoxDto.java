@@ -5,12 +5,12 @@ public class BoxDto {
     private String nameAr;
     private String nameEn;
     private Long capacity;
-    private int serial;
+    private Long serial;
 
     public BoxDto() {
     }
 
-    public BoxDto(String nameAr, String nameEn, Long capacity, int serial) {
+    public BoxDto(String nameAr, String nameEn, Long capacity, Long serial) {
         this.nameAr = nameAr;
         this.nameEn = nameEn;
         this.capacity = capacity;
@@ -41,11 +41,11 @@ public class BoxDto {
         this.capacity = capacity;
     }
 
-    public int getSerial() {
+    public Long getSerial() {
         return serial;
     }
 
-    public void setSerial(int serial) {
+    public void setSerial(Long serial) {
         this.serial = serial;
     }
 
