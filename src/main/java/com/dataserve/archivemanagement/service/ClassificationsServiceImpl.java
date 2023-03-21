@@ -1,27 +1,24 @@
 package com.dataserve.archivemanagement.service;
 
-import com.dataserve.archivemanagement.constant.ResponseInfo;
-import com.dataserve.archivemanagement.model.Classifications;
-import com.dataserve.archivemanagement.model.Users;
-import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
-import com.dataserve.archivemanagement.model.dto.response.UserResponse;
-import com.dataserve.archivemanagement.repository.ClassificationsRepo;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
+import com.dataserve.archivemanagement.constant.ResponseInfo;
+import com.dataserve.archivemanagement.model.Classifications;
+import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
+import com.dataserve.archivemanagement.repository.ClassificationsRepo;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ClassificationsServiceImpl implements ClassificationsService{
 
-    private ClassificationsRepo classificationsRepo ;
+    private final ClassificationsRepo classificationsRepo ;
 
-    @Autowired
-    public ClassificationsServiceImpl(ClassificationsRepo classificationsRepo) {
-        this.classificationsRepo = classificationsRepo;
-    }
+    
 
     @Override
     public Optional<Classifications> findById(Long theId) {
@@ -44,7 +41,7 @@ public class ClassificationsServiceImpl implements ClassificationsService{
     public ClassificationResponse listClassifications() {
     	ClassificationResponse response = new ClassificationResponse();
     	try {
-    		 List<Classifications> objectList = classificationsRepo.findAll();
+    		 List<Classifications> objectList = classificationsRepo.listClassifications();
              if (!objectList.isEmpty()) {
                  response.setResponse(objectList);
                  response.setResponseCode(String.valueOf(ResponseInfo.SUCCESS.getStatusCode()));

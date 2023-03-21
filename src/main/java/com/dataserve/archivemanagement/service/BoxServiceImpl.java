@@ -6,22 +6,19 @@ import com.dataserve.archivemanagement.model.dto.BoxDto;
 import com.dataserve.archivemanagement.model.dto.response.BoxResponse;
 import com.dataserve.archivemanagement.repository.BoxRepo;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BoxServiceImpl implements BoxService{
 
 
     private final BoxRepo boxRepo;
-
-    @Autowired
-    public BoxServiceImpl(BoxRepo boxRepo) {
-        this.boxRepo = boxRepo;
-    }
 
     @Override
     public List<Box> findAll() {
@@ -57,9 +54,9 @@ public class BoxServiceImpl implements BoxService{
     public BoxResponse findBySerial(Long serial) {
     	BoxResponse  response = new BoxResponse();
     	try {
-    		List<Box> dataList = boxRepo.findBySerial(serial);
-    		if (!dataList.isEmpty()) {
-        		response.setResponse(dataList.get(0));
+    		Optional<Box> data = boxRepo.findBySerial(serial);
+    		if (data.isPresent()) {
+        		response.setResponse(data);
                 response.setResponseCode(String.valueOf(ResponseInfo.SUCCESS.getStatusCode()));
                 response.setResponseMessage(ResponseInfo.SUCCESS.getMessage());
                 response.setResponseMessageAr(ResponseInfo.SUCCESS.getMessageAr());
@@ -79,21 +76,5 @@ public class BoxServiceImpl implements BoxService{
     }
 
 
-    @Override
-    public BoxDto save(Box theBox) {
-
-        boxRepo.save(theBox);
-        BoxDto boxdto = new BoxDto();
-        boxdto.setCapacity(theBox.getCapacity());
-        boxdto.setNameAr(theBox.getNameAr());
-        boxdto.setSerial(theBox.getSerial());
-        boxdto.setNameEn(theBox.getNameEn());
-        boxdto.setBoxId(theBox.getBoxId());
-        return boxdto;
-    }
-
-    @Override
-    public void deleteById(Box theBox) {
-        boxRepo.delete(theBox);
-    }
+    
 }

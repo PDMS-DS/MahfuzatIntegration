@@ -4,24 +4,26 @@ import com.dataserve.archivemanagement.constant.ResponseInfo;
 import com.dataserve.archivemanagement.model.Folder;
 import com.dataserve.archivemanagement.model.dto.FolderDto;
 import com.dataserve.archivemanagement.model.dto.response.FolderResponse;
+import com.dataserve.archivemanagement.repository.BoxRepo;
 import com.dataserve.archivemanagement.repository.FolderRepo;
+
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class FolderServiceImpl implements FolderService{
+	
+    private final FolderRepo folderRepo ;
+//	private final ModelMapper mapper;
 
-    private FolderRepo folderRepo ;
-
-    @Autowired
-    public FolderServiceImpl(FolderRepo folderRepo) {
-        this.folderRepo = folderRepo;
-    }
 
 
     @Override
@@ -58,9 +60,9 @@ public class FolderServiceImpl implements FolderService{
     public FolderResponse findBySerial(Long serial) {
     	FolderResponse  response = new FolderResponse();
     	try {
-    		List<Folder> dataList = folderRepo.findBySerial(serial);
-    		if (!dataList.isEmpty()) {
-        		response.setResponse(dataList.get(0));
+    		Optional<Folder> data = folderRepo.findBySerial(serial);
+    		if (data.isPresent()) {
+        		response.setResponse(data);
                 response.setResponseCode(String.valueOf(ResponseInfo.SUCCESS.getStatusCode()));
                 response.setResponseMessage(ResponseInfo.SUCCESS.getMessage());
                 response.setResponseMessageAr(ResponseInfo.SUCCESS.getMessageAr());
@@ -79,23 +81,5 @@ public class FolderServiceImpl implements FolderService{
     	
     }
 
-    @Override
-    public FolderDto save(Folder theFolder) {
-        theFolder.setAddedOn(new Date());
-        folderRepo.save(theFolder);
-        FolderDto folderDto = new FolderDto();
-        folderDto.setFolderId(theFolder.getFolderId());
-        folderDto.setCapacity(theFolder.getCapacity());
-        folderDto.setNameAr(theFolder.getNameAr());
-        folderDto.setSerial(theFolder.getSerial());
-        folderDto.setNameEn(theFolder.getNameEn());
-        folderDto.setBoxId(theFolder.getBoxId());
-        folderDto.setAddedOn(theFolder.getAddedOn());
-        return folderDto;
-    }
-
-    @Override
-    public void deleteById(Folder theFolder) {
-        folderRepo.delete(theFolder);
-    }
+  
 }

@@ -2,7 +2,6 @@ package com.dataserve.archivemanagement.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,12 +12,14 @@ import com.dataserve.archivemanagement.model.Folder;
 import com.dataserve.archivemanagement.model.dto.response.FolderResponse;
 import com.dataserve.archivemanagement.service.FolderService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/physicalArchive")
+@RequiredArgsConstructor
 public class FolderController {
 
-    @Autowired
-    private FolderService folderService;
+    private final FolderService folderService;
 
     @GetMapping("/folder")
     public List<Folder> getAllFolders() {

@@ -1,7 +1,10 @@
 package com.dataserve.archivemanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
@@ -11,6 +14,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "GROUPS")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Groups {
 
     @Id
@@ -60,92 +66,5 @@ public class Groups {
 //		this.users = users;
 //	}
 
-	public Groups() {
-    }
-
-    public Groups(Long groupId, String groupArName, String groupEnName, String groupLdap, boolean enabled, boolean active) {
-        this.groupId = groupId;
-        this.groupArName = groupArName;
-        this.groupEnName = groupEnName;
-        this.groupLdap = groupLdap;
-        this.enabled = enabled;
-        this.active = active;
-    }
-
-
-
-
-    public Long getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
-    }
-
-
-    public String getGroupArName() {
-        return groupArName;
-    }
-
-    public void setGroupArName(String groupArName) {
-        this.groupArName = groupArName;
-    }
-
-
-    public String getGroupEnName() {
-        return groupEnName;
-    }
-
-    public void setGroupEnName(String groupEnName) {
-        this.groupEnName = groupEnName;
-    }
-
-
-    public String getGroupLdap() {
-        return groupLdap;
-    }
-
-    public void setGroupLdap(String groupLdap) {
-        this.groupLdap = groupLdap;
-    }
-
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-
-    public Set<Permissions> getPermissionsG() {
-        return permissionsG;
-    }
-
-    public void setPermissionsG(Set<Permissions> permissions) {
-        this.permissionsG = permissions;
-    }
-
-    @Override
-    public String toString() {
-        return "Groups{" +
-                "groupId=" + groupId +
-                ", groupArName='" + groupArName + '\'' +
-                ", groupEnName='" + groupEnName + '\'' +
-                ", groupLdap='" + groupLdap + '\'' +
-                ", enabled=" + enabled +
-                ", active=" + active +
-                '}';
-    }
+	
 }

@@ -2,13 +2,27 @@ package com.dataserve.archivemanagement.model;
 
 
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import javax.persistence.*;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "BOX_TYPE")
+@Getter
+@Setter
+@NoArgsConstructor
 public class BoxType {
 
     @Id
@@ -33,48 +47,5 @@ public class BoxType {
         this.boxTypeEn = boxTypeEn;
     }
 
-    public BoxType() {
-    }
-
-
-    public Long getBoxTypeId() {
-        return boxTypeId;
-    }
-
-    public void setBoxTypeId(Long boxTypeId) {
-        this.boxTypeId = boxTypeId;
-    }
-
-    public String getBoxTypeAr() {
-        return boxTypeAr;
-    }
-
-    public void setBoxTypeAr(String boxTypeAr) {
-        this.boxTypeAr = boxTypeAr;
-    }
-
-    public String getBoxTypeEn() {
-        return boxTypeEn;
-    }
-
-    public void setBoxTypeEn(String boxTypeEn) {
-        this.boxTypeEn = boxTypeEn;
-    }
-
-    public Set<Box> getBox() {
-        return box;
-    }
-
-    public void setBox(Set<Box> box) {
-        this.box = box;
-    }
-
-    @Override
-    public String toString() {
-        return "BoxType{" +
-                "boxTypeId=" + boxTypeId +
-                ", boxTypeAr='" + boxTypeAr + '\'' +
-                ", boxTypeEn='" + boxTypeEn + '\'' +
-                '}';
-    }
+   
 }

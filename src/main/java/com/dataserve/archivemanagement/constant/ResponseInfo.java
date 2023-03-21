@@ -1,6 +1,10 @@
 package com.dataserve.archivemanagement.constant;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public enum ResponseInfo {
 
     SUCCESS(200, "Success",
@@ -13,23 +17,7 @@ public enum ResponseInfo {
     private final int statusCode;
     private final String message;
     private final String messageAr;
-	private ResponseInfo(
-			int statusCode,
-			String message,
-			String messageAr) {
-		this.statusCode = statusCode;
-		this.message = message;
-		this.messageAr = messageAr;
-	}
-	public int getStatusCode() {
-		return statusCode;
-	}
-	public String getMessage() {
-		return message;
-	}
-	public String getMessageAr() {
-		return messageAr;
-	}
+	
     
     
 

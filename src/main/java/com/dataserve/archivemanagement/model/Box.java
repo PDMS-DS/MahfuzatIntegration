@@ -3,12 +3,20 @@ package com.dataserve.archivemanagement.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Date;
 
 
 @Entity
 @Table(name = "BOX")
+@Getter
+@Setter
+@NoArgsConstructor
+
 public class Box {
 
     @Id
@@ -53,106 +61,7 @@ public class Box {
     @JoinColumn(name="BOX_TYPE_ID", nullable=true)
     private BoxType boxType;
 
-    public Box() {
-    }
-
-    public Box(Long boxId, String nameAr, String nameEn,  Long capacity, Date addedOn, Long serial, Date date) {
-        this.boxId = boxId;
-        this.nameAr = nameAr;
-        this.nameEn = nameEn;
-        this.capacity = capacity;
-        this.addedOn = addedOn;
-        this.serial = serial;
-        this.date = date;
-    }
-
-    public Long getBoxId() {
-        return boxId;
-    }
-
-    public void setBoxId(Long boxId) {
-        this.boxId = boxId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEn() {
-        return nameEn;
-    }
-
-    public void setNameEn(String nameEn) {
-        this.nameEn = nameEn;
-    }
-
-    public Long getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Long capacity) {
-        this.capacity = capacity;
-    }
-
-    public Date getAddedOn() {
-        return addedOn;
-    }
-
-    public void setAddedOn(Date addedOn) {
-        this.addedOn = addedOn;
-    }
-
-    public Long getSerial() {
-        return serial;
-    }
-
-    public void setSerial(Long serial) {
-        this.serial = serial;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Shelf getShelf() {
-        return shelf;
-    }
-
-    public void setShelf(Shelf shelf) {
-        this.shelf = shelf;
-    }
-
-    public BoxType getBoxType() {
-        return boxType;
-    }
-
-    public void setBoxType(BoxType boxType) {
-        this.boxType = boxType;
-    }
-
-    public Long getBoxTypeId() {
-        return boxTypeId;
-    }
-
-    public void setBoxTypeId(Long boxTypeId) {
-        this.boxTypeId = boxTypeId;
-    }
-
-    public Long getShelfId() {
-        return shelfId;
-    }
-
-    public void setShelfId(Long shelfId) {
-        this.shelfId = shelfId;
-    }
+   
 
     public String getPathAr(){
         String departmentName  = null;
@@ -254,16 +163,5 @@ public class Box {
         return path;
     }
 
-    @Override
-    public String toString() {
-        return "Box{" +
-                "boxId=" + boxId +
-                ", nameAr='" + nameAr + '\'' +
-                ", nameEn='" + nameEn + '\'' +
-                ", capacity=" + capacity +
-                ", addedOn=" + addedOn +
-                ", serial=" + serial +
-                ", date=" + date +
-                '}';
-    }
+   
 }

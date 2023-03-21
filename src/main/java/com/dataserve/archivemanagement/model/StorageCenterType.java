@@ -2,11 +2,18 @@ package com.dataserve.archivemanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "STORAGE_CENTER_TYPE")
+@Getter
+@Setter
+@NoArgsConstructor
 public class StorageCenterType {
 
     @Id
@@ -24,52 +31,4 @@ public class StorageCenterType {
     @OneToMany(mappedBy="storageCenterType" , fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<StorageCenter> storageCenter ;
-
-
-
-    public StorageCenterType() {
-    }
-
-    public Long getStorageCenterTypeId() {
-        return storageCenterTypeId;
-    }
-
-    public void setStorageCenterTypeId(Long storageCenterTypeId) {
-        this.storageCenterTypeId = storageCenterTypeId;
-    }
-
-    public String getTypeAr() {
-        return typeAr;
-    }
-
-    public void setTypeAr(String typeAr) {
-        this.typeAr = typeAr;
-    }
-
-    public String getTypeEn() {
-        return typeEn;
-    }
-
-    public void setTypeEn(String typeEn) {
-        this.typeEn = typeEn;
-    }
-
-    public Set<StorageCenter> getStorageCenter() {
-        return storageCenter;
-    }
-
-    public void setStorageCenter(Set<StorageCenter> storageCenter) {
-        this.storageCenter = storageCenter;
-    }
-
-    @Override
-    public String toString() {
-        return "StorageCenterType{" +
-                "storageCenterTypeId=" + storageCenterTypeId +
-                ", typeAr='" + typeAr + '\'' +
-                ", typeEn='" + typeEn + '\'' +
-                '}';
-    }
-
-
 }

@@ -3,21 +3,20 @@ package com.dataserve.archivemanagement.controller;
 import com.dataserve.archivemanagement.exception.ResourceNotFoundException;
 import com.dataserve.archivemanagement.model.Classifications;
 import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
+import com.dataserve.archivemanagement.service.BoxService;
 import com.dataserve.archivemanagement.service.ClassificationsService;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/physicalArchive")
+@RequiredArgsConstructor
 public class ClassificationController {
 
-    @Autowired
-    private ClassificationsService classificationsService;
+    private final ClassificationsService classificationsService;
 
     @GetMapping("/classifications")
     public ResponseEntity<ClassificationResponse> getClassifications() {

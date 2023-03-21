@@ -1,10 +1,21 @@
 package com.dataserve.archivemanagement.model;
 
 import javax.persistence.*;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "AUDIT")
+@Getter
+@Setter
+@NoArgsConstructor
+
 public class Audit {
 
     @Id
@@ -25,9 +36,6 @@ public class Audit {
     private String actionTypeId;
 
 
-    public Audit() {
-
-    }
-
+    
 
 }

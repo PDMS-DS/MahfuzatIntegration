@@ -1,9 +1,18 @@
 package com.dataserve.archivemanagement.model;
 
+import java.util.Set;
+
 import javax.persistence.*;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "USERS_GROUPS")
+@Getter
+@Setter
+@NoArgsConstructor
 public class UsersGroups {
 
     @Id
@@ -17,37 +26,4 @@ public class UsersGroups {
     private Long groupsId;
 
 
-
-
-    public Long getUserId() {
-		return userId;
-	}
-
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-
-	public Long getGroupsId() {
-		return groupsId;
-	}
-
-
-	public void setGroupsId(Long groupsId) {
-		this.groupsId = groupsId;
-	}
-
-
-	public UsersGroups() {
-    }
-
-
-    @Override
-    public String toString() {
-        return "UsersGroups{" +
-                "userId=" + userId +
-                ", groupsId=" + groupsId +
-                '}';
-    }
 }

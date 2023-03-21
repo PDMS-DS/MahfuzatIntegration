@@ -3,11 +3,18 @@ package com.dataserve.archivemanagement.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "LINE")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Line {
 
     @Id
@@ -41,82 +48,5 @@ public class Line {
     @JoinColumn(name="INVENTORY_ID", nullable=true)
     private Inventory inventory;
 
-    public Line() {
-    }
-
-    public Long getLineId() {
-        return lineId;
-    }
-
-    public void setLineId(Long lineId) {
-        this.lineId = lineId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEn() {
-        return nameEn;
-    }
-
-    public void setNameEn(String nameEn) {
-        this.nameEn = nameEn;
-    }
-
-    public Long getInventoryId() {
-        return inventoryId;
-    }
-
-    public void setInventoryId(Long inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-
-    public Long getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Long capacity) {
-        this.capacity = capacity;
-    }
-
-    public Long getSerial() {
-        return serial;
-    }
-
-    public void setSerial(Long serial) {
-        this.serial = serial;
-    }
-
-    public Set<Shelf> getShelf() {
-        return shelf;
-    }
-
-    public void setShelf(Set<Shelf> shelf) {
-        this.shelf = shelf;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    @Override
-    public String toString() {
-        return "Line{" +
-                "lineId=" + lineId +
-                ", nameAr='" + nameAr + '\'' +
-                ", nameEn='" + nameEn + '\'' +
-                ", inventoryId=" + inventoryId +
-                ", capacity=" + capacity +
-                ", serial=" + serial +
-                '}';
-    }
+   
 }

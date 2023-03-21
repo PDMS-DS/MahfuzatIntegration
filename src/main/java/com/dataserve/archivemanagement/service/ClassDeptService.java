@@ -11,7 +11,5 @@ public interface ClassDeptService {
 
     public Optional<ClassDept> findById(Long theId);
 
-    public ClassDept save(ClassDept theClassDept);
 
-    public void deleteById(ClassDept theClassDept);
 }

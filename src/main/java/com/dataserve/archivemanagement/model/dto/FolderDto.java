@@ -1,6 +1,5 @@
 package com.dataserve.archivemanagement.model.dto;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 public class FolderDto {

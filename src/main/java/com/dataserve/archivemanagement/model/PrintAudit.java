@@ -1,10 +1,18 @@
 package com.dataserve.archivemanagement.model;
 
 import javax.persistence.*;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Date;
 
 @Entity
 @Table(name = "PRINT_AUDIT")
+@Getter
+@Setter
+@NoArgsConstructor
 public class PrintAudit {
 
     @Id
@@ -36,28 +44,4 @@ public class PrintAudit {
 
     @Column(name = "PRINTED_UNIT_ID", nullable = true)
     private Long printedUnitId;
-
-
-
-
-
-
-    public PrintAudit() {
-    }
-
-
-    @Override
-    public String toString() {
-        return "PrintAudit{" +
-                "printAuditId=" + printAuditId +
-                ", transactionDate=" + transactionDate +
-                ", userId=" + userId +
-//                ", moduleId=" + moduleId +
-                ", actionTypeId=" + actionTypeId +
-                ", numberOfPrints=" + numberOfPrints +
-                ", reason='" + reason + '\'' +
-                ", printedUnitTypeId=" + printedUnitTypeId +
-                ", printedUnitId=" + printedUnitId +
-                '}';
-    }
 }

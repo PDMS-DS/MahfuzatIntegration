@@ -2,12 +2,15 @@ package com.dataserve.archivemanagement.model;
 
 import org.hibernate.annotations.Type;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import javax.persistence.*;
 @Entity
 @Table(name = "USERS")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Users {
 
 
@@ -33,18 +36,7 @@ public class Users {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isActive;
     
-    public Users() {
-    }
-
-    public Users(Long userId, String userArName, String userEnName, String userNameLdap, boolean isLogin, boolean isActive) {
-        this.userId = userId;
-        this.userArName = userArName;
-        this.userEnName = userEnName;
-        this.userNameLdap = userNameLdap;
-        this.isLogin = isLogin;
-        this.isActive = isActive;
-    }
-
+   
 //    
 //    @ManyToMany(fetch = FetchType.LAZY,
 //            cascade = {
@@ -87,68 +79,4 @@ public class Users {
 
 	
     
-    public Long getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-   
-    public String getUserArName() {
-        return userArName;
-    }
-
-    public void setUserArName(String userArName) {
-        this.userArName = userArName;
-    }
-
-    
-    public String getUserEnName() {
-        return userEnName;
-    }
-
-    public void setUserEnName(String userEnName) {
-        this.userEnName = userEnName;
-    }
-
-    
-    public String getUserNameLdap() {
-        return userNameLdap;
-    }
-
-    public void setUserNameLdap(String userNameLdap) {
-        this.userNameLdap = userNameLdap;
-    }
-
-   
-    public boolean isLogin() {
-        return isLogin;
-    }
-
-    public void setLogin(boolean login) {
-        isLogin = login;
-    }
-
-    
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    @Override
-    public String toString() {
-        return "Users{" +
-                "userId=" + userId +
-                ", userArName='" + userArName + '\'' +
-                ", userEnName='" + userEnName + '\'' +
-                ", userNameLdap='" + userNameLdap + '\'' +
-                ", isLogin=" + isLogin +
-                ", isActive=" + isActive +
-                '}';
-    }
 }

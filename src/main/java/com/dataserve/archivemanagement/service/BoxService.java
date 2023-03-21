@@ -15,11 +15,7 @@ public interface BoxService {
     
     public BoxResponse findBySerial(Long serial);
 
-//    public Optional<Box> findByIdAndShelfId(Long boxId , Long shelfId);
 
-    public BoxDto save(Box theBox);
-
-    public void deleteById(Box theBox);
 
 
 }

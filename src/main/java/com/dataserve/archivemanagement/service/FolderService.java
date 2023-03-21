@@ -13,8 +13,5 @@ public interface FolderService {
     public FolderResponse findById(Long theId);
     
     public FolderResponse findBySerial(Long serial);
-    
-    public FolderDto save(Folder theFolder);
 
-    public void deleteById(Folder theFolder);
 }

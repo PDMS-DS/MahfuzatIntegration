@@ -3,9 +3,7 @@ package com.dataserve.archivemanagement.service;
 
 
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dataserve.archivemanagement.constant.ResponseInfo;
@@ -13,15 +11,15 @@ import com.dataserve.archivemanagement.model.Users;
 import com.dataserve.archivemanagement.model.dto.response.UserResponse;
 import com.dataserve.archivemanagement.repository.UsersRepo;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
     private final UsersRepo usersRepo;
 
-    @Autowired
-    public UserServiceImpl(UsersRepo usersRepo) {
-        this.usersRepo = usersRepo;
-    }
+  
     @Override
     public UserResponse listUsers() {
     	UserResponse userResponse = new UserResponse();
@@ -45,19 +43,5 @@ public class UserServiceImpl implements UserService{
     	return userResponse;
     }
 
-    @Override
-    public Optional<Users> findById(Long theId) {
-        return usersRepo.findById(theId);
-    }
-
-    @Override
-    public Users save(Users theUser) {
-        usersRepo.save(theUser);
-        return theUser;
-    }
-
-    @Override
-    public void deleteById(Users theUser) {
-        usersRepo.delete(theUser);
-    }
+   
 }

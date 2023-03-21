@@ -1,35 +1,27 @@
 package com.dataserve.archivemanagement.controller;
 
 
-import com.dataserve.archivemanagement.exception.ResourceNotFoundException;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.dataserve.archivemanagement.model.Box;
-import com.dataserve.archivemanagement.model.BoxType;
-import com.dataserve.archivemanagement.model.Shelf;
-import com.dataserve.archivemanagement.model.dto.BoxDto;
 import com.dataserve.archivemanagement.model.dto.response.BoxResponse;
 import com.dataserve.archivemanagement.service.BoxService;
-import com.dataserve.archivemanagement.service.BoxTypeService;
-import com.dataserve.archivemanagement.service.ShelfService;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/physicalArchive")
+@RequiredArgsConstructor
 public class BoxController {
 
-    @Autowired
-    private BoxService boxService;
+    private final BoxService boxService;
 
-    @Autowired
-    private ShelfService shelfService;
-
-    @Autowired
-    private BoxTypeService boxTypeService;
 
     @GetMapping("/box")
     public List<Box> getAllBox() {

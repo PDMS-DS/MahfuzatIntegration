@@ -1,7 +1,11 @@
 package com.dataserve.archivemanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -9,6 +13,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "STORAGE_CENTER")
+@Getter
+@Setter
+@NoArgsConstructor
 public class StorageCenter {
 
     @Id
@@ -47,91 +54,5 @@ public class StorageCenter {
     @JoinColumn(name="CENTER_TYPE_ID", nullable=true)
     private StorageCenterType storageCenterType;
 
-    public StorageCenter() {
-    }
 
-    public Long getCenterId() {
-        return centerId;
-    }
-
-    public void setCenterId(Long centerId) {
-        this.centerId = centerId;
-    }
-
-    public String getNameAr() {
-        return nameAr;
-    }
-
-    public void setNameAr(String nameAr) {
-        this.nameAr = nameAr;
-    }
-
-    public String getNameEn() {
-        return nameEn;
-    }
-
-    public void setNameEn(String nameEn) {
-        this.nameEn = nameEn;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public Long getCenterTypeId() {
-        return centerTypeId;
-    }
-
-    public void setCenterTypeId(Long centerTypeId) {
-        this.centerTypeId = centerTypeId;
-    }
-
-    public Long getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(Long deptId) {
-        this.deptId = deptId;
-    }
-
-    public Set<Inventory> getInventory() {
-        return inventory;
-    }
-
-    public void setInventory(Set<Inventory> inventory) {
-        this.inventory = inventory;
-    }
-
-    public Departments getDepartments() {
-        return departments;
-    }
-
-    public void setDepartments(Departments departments) {
-        this.departments = departments;
-    }
-
-    public StorageCenterType getStorageCenterType() {
-        return storageCenterType;
-    }
-
-    public void setStorageCenterType(StorageCenterType storageCenterType) {
-        this.storageCenterType = storageCenterType;
-    }
-
-
-    @Override
-    public String toString() {
-        return "StorageCenter{" +
-                "centerId=" + centerId +
-                ", nameAr='" + nameAr + '\'' +
-                ", nameEn='" + nameEn + '\'' +
-                ", isActive=" + isActive +
-                ", centerTypeId=" + centerTypeId +
-                ", deptId=" + deptId +
-                '}';
-    }
 }

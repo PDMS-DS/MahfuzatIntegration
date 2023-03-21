@@ -1,15 +1,30 @@
 package com.dataserve.archivemanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import java.util.HashSet;
-import java.util.Set;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "DEPARTMENTS")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Departments {
 
     @Id
@@ -40,73 +55,13 @@ public class Departments {
             cascade = CascadeType.ALL)
     private Set<ClassDept> classDept ;
 
-//    @ManyToMany(mappedBy = "depts")
-//    Set<Users> users = new HashSet<>();
-//
-//    public Set<Users> getUsers() {
-//		return users;
-//	}
-//
-//	public void setUsers(Set<Users> users) {
-//		this.users = users;
-//	}
+    @JsonManagedReference
+    @OneToMany(mappedBy="departments" , fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL)
+    private Set<DmsFiles> dmsFiles  ;
+    
 
-	public Departments() {
-    }
-
-    public Long getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(Long deptId) {
-        this.deptId = deptId;
-    }
-
-    public String getDeptArName() {
-        return deptArName;
-    }
-
-    public void setDeptArName(String deptArName) {
-        this.deptArName = deptArName;
-    }
-
-    public String getDeptEnName() {
-        return deptEnName;
-    }
-
-    public void setDeptEnName(String deptEnName) {
-        this.deptEnName = deptEnName;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getDeptCode() {
-        return deptCode;
-    }
-
-    public void setDeptCode(String deptCode) {
-        this.deptCode = deptCode;
-    }
-
-    public Set<StorageCenter> getStorageCenter() {
-        return storageCenter;
-    }
-
-    public void setStorageCenter(Set<StorageCenter> storageCenter) {
-        this.storageCenter = storageCenter;
-    }
-
-    public Set<ClassDept> getClassDept() {
-        return classDept;
-    }
-
-    public void setClassDept(Set<ClassDept> classDept) {
-        this.classDept = classDept;
-    }
+	
+    
+    
 }

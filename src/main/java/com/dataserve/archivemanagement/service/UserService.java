@@ -11,10 +11,8 @@ public interface UserService {
 
     public UserResponse listUsers();
 
-    public Optional<Users> findById(Long theId);
 
-    public Users save(Users theUser);
 
-    public void deleteById(Users theUser);
+
 
 }

@@ -3,24 +3,21 @@ package com.dataserve.archivemanagement.service;
 import com.dataserve.archivemanagement.model.ClassDept;
 import com.dataserve.archivemanagement.repository.ClassDeptRepo;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
+@RequiredArgsConstructor
 public class ClassDeptServiceImpl implements ClassDeptService{
 
-    private ClassDeptRepo classDeptRepo ;
-
-    @Autowired
-    public ClassDeptServiceImpl(ClassDeptRepo classDeptRepo) {
-        this.classDeptRepo = classDeptRepo;
-    }
-
+    private final ClassDeptRepo classDeptRepo ;
 
     @Override
     public List<ClassDept> findAll() {
-        return null;
+        return classDeptRepo.listClassDept();
     }
 
     @Override
@@ -28,13 +25,5 @@ public class ClassDeptServiceImpl implements ClassDeptService{
         return Optional.empty();
     }
 
-    @Override
-    public ClassDept save(ClassDept theClassDept) {
-        return null;
-    }
-
-    @Override
-    public void deleteById(ClassDept theClassDept) {
-
-    }
+    
 }

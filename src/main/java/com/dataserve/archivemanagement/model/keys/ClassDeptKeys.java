@@ -8,7 +8,7 @@ import java.util.Objects;
 @Embeddable
 public class ClassDeptKeys implements Serializable {
 
-
+	
 	@Column(name = "CLASSIFICATION_ID")
     Long classificationId;
 
