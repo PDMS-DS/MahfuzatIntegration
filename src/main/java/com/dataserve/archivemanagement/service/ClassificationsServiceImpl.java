@@ -41,6 +41,9 @@ public class ClassificationsServiceImpl implements ClassificationsService{
     public ClassificationResponse listClassifications() {
     	ClassificationResponse response = new ClassificationResponse();
     	try {
+    		// read super user name from config file 
+    		// if yes return all claasification else return list according to user department 
+    		
     		 List<Classifications> objectList = classificationsRepo.listClassifications();
              if (!objectList.isEmpty()) {
                  response.setResponse(objectList);
