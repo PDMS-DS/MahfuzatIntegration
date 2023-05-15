@@ -10,5 +10,6 @@ import com.dataserve.archivemanagement.model.Users;
 public interface UsersRepo extends JpaRepository<Users, Long> {
 	
 	Users findByUserNameLdap(String userName);
-	
+	Users findByUserEnName(String userName);
+
 }

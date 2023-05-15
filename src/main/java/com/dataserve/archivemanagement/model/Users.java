@@ -5,7 +5,9 @@ import org.hibernate.annotations.Type;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import javax.persistence.*;
+
 @Entity
 @Table(name = "USERS")
 @Getter
@@ -15,28 +17,32 @@ public class Users {
 
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_ID", nullable = false)
     private Long userId;
 
     @Column(name = "UserArname", nullable = true)
     private String userArName;
-    
+
     @Column(name = "UserEnName", nullable = true)
     private String userEnName;
 
     @Column(name = "UsernameLDAP", nullable = true)
     private String userNameLdap;
-    
-    @Column(name = "IsLogin", nullable = true )
+
+    @Column(name = "IsLogin", nullable = true)
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isLogin;
-    
-    @Column(name = "IsActive", nullable = true )
+
+    @Column(name = "IsActive", nullable = true)
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isActive;
-    
-   
+
+    @ManyToOne
+    @JoinColumn(name = "DEPARTMENT_ID")
+    private Departments department;
+
+
 //    
 //    @ManyToMany(fetch = FetchType.LAZY,
 //            cascade = {
@@ -48,7 +54,7 @@ public class Users {
 //            inverseJoinColumns = @JoinColumn(name = "DEPARTMENT_ID"))
 //    Set<Departments> depts = new HashSet<>();
 
-    
+
 //    @ManyToMany(fetch = FetchType.LAZY,
 //            cascade = {
 //                    CascadeType.ALL
@@ -59,7 +65,7 @@ public class Users {
 //            inverseJoinColumns = @JoinColumn(name = "GROUP_ID"))
 //    Set<Groups> groups = new HashSet<>();
 // 
-  
+
 
 //	public Set<Departments> getDepts() {
 //		return depts;
@@ -77,6 +83,5 @@ public class Users {
 //		this.groups = groups;
 //	}
 
-	
-    
+
 }

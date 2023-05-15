@@ -1,7 +1,8 @@
 package com.dataserve.archivemanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,10 +16,11 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Classifications {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CLASSIFICATION_ID", nullable = false)
     private Long classificationId;
 
@@ -39,14 +41,14 @@ public class Classifications {
     private String classCode;
 
     @JsonIgnore
-    @OneToMany(mappedBy="classifications" , fetch = FetchType.LAZY,
+    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
-    private Set<ClassDept> classDept ;
+    private Set<ClassDept> classDept;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy="classifications" , fetch = FetchType.LAZY, 
+    @JsonBackReference
+    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
-    private Set<Folder> folder  ;
+    private Set<Folder> folder;
 
-    
+
 }
