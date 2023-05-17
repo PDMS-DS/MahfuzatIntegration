@@ -6,7 +6,7 @@ import java.util.Optional;
 
 
 import com.dataserve.archivemanagement.config.ConfigUtil;
-import com.dataserve.archivemanagement.model.Users;
+import com.dataserve.archivemanagement.model.AppUsers;
 import com.dataserve.archivemanagement.repository.ClassDeptRepo;
 import com.dataserve.archivemanagement.repository.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,6 @@ import com.dataserve.archivemanagement.repository.ClassificationsRepo;
 
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 
 @Service
@@ -65,9 +64,9 @@ public class ClassificationsServiceImpl implements ClassificationsService {
             if (superAdmin.equals("fntadmin")) {
                 objectList = classificationsRepo.listClassifications();
             } else {
-                Users user = usersRepo.findByUserEnName("FileNet");  // user for testing FileNet
-                if (user != null) {
-                    Long deptId = user.getDepartment().getDeptId();
+                Optional<AppUsers> user = usersRepo.findByUserEnName("FileNet");  // user for testing FileNet
+                if (!user.isPresent()) {
+                    Long deptId = user.get().getDepartment().getDeptId();
                     objectList = classificationsRepo.findByClassDept_Departments_DeptId(deptId);
                 }
             }

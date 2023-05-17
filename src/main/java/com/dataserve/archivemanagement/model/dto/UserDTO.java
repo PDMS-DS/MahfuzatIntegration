@@ -4,10 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.dataserve.archivemanagement.model.Groups;
-import com.dataserve.archivemanagement.model.Users;
+import com.dataserve.archivemanagement.model.AppUsers;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -24,7 +23,7 @@ public class UserDTO {
 
 	private Set<Groups> groups = new HashSet<>();
 
-	public UserDTO(Users user) {
+	public UserDTO(AppUsers user) {
 		this.userId = user.getUserId();
 		this.userArName = user.getUserArName();
 		this.userEnName = user.getUserEnName();
