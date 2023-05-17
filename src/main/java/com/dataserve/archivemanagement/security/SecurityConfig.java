@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private AppAuthenticationEntryPoint appAuthenticationEntryPoint;
+    private JWTUnAuthResponse jwtUnAuthResponse;
 
     @Autowired
     private UserDetailsService appUserService;
@@ -35,7 +35,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable()
                 .authorizeRequests().antMatchers("/physicalArchive/authenticate").permitAll().
                 anyRequest().authenticated().and().
-                exceptionHandling().authenticationEntryPoint(appAuthenticationEntryPoint).and().sessionManagement()
+                exceptionHandling().authenticationEntryPoint(jwtUnAuthResponse).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity.addFilterBefore(appRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }

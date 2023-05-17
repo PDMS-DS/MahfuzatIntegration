@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AppUsers {
+public class AppUsers  {
 
 
     @Id

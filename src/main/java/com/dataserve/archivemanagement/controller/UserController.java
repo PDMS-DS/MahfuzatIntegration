@@ -41,7 +41,7 @@ public class UserController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private UserService userService;
+    private UserDetailsService userService;
 
 
     private UsersGroupsRepo userGroupRepo;
