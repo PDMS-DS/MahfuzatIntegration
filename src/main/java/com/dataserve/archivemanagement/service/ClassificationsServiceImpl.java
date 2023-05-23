@@ -6,15 +6,13 @@ import java.util.Optional;
 
 
 import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.model.AppUsers;
-import com.dataserve.archivemanagement.repository.ClassDeptRepo;
 import com.dataserve.archivemanagement.repository.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dataserve.archivemanagement.constant.ResponseInfo;
 import com.dataserve.archivemanagement.model.Classifications;
-import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
 import com.dataserve.archivemanagement.repository.ClassificationsRepo;
 
 import lombok.RequiredArgsConstructor;
@@ -29,8 +27,6 @@ public class ClassificationsServiceImpl implements ClassificationsService {
     private ClassificationsRepo classificationsRepo;
     @Autowired
     private UsersRepo usersRepo;
-    @Autowired
-    private ClassDeptRepo classDeptRepo;
 
     @Autowired
     private final ConfigUtil configUtil;
@@ -52,42 +48,22 @@ public class ClassificationsServiceImpl implements ClassificationsService {
         classificationsRepo.delete(theClassifications);
     }
 
-
     @Override
-    public ClassificationResponse listClassifications() {
-        ClassificationResponse response = new ClassificationResponse();
+    public List<Classifications> listClassifications() {
         List<Classifications> objectList = null;
+        String userName = "";
+        String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
+        if (superAdmin.equals("fntadmin")) {
+            return classificationsRepo.listClassifications();
+        } else {
+            AppUsers user = usersRepo.findByUserEnName("FileNet").orElseThrow(
 
-
-        try {
-            String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
-            if (superAdmin.equals("fntadmin")) {
-                objectList = classificationsRepo.listClassifications();
-            } else {
-                Optional<AppUsers> user = usersRepo.findByUserEnName("FileNet");  // user for testing FileNet
-                if (!user.isPresent()) {
-                    Long deptId = user.get().getDepartment().getDeptId();
-                    objectList = classificationsRepo.findByClassDept_Departments_DeptId(deptId);
-                }
-            }
-            if (!objectList.isEmpty()) {
-                response.setResponse(objectList);
-                response.setResponseCode(String.valueOf(ResponseInfo.SUCCESS.getStatusCode()));
-                response.setResponseMessage(ResponseInfo.SUCCESS.getMessage());
-                response.setResponseMessageAr(ResponseInfo.SUCCESS.getMessageAr());
-            } else {
-                response.setResponseCode(String.valueOf(ResponseInfo.NO_DATA_FOUND.getStatusCode()));
-                response.setResponseMessage(ResponseInfo.NO_DATA_FOUND.getMessage());
-                response.setResponseMessageAr(ResponseInfo.NO_DATA_FOUND.getMessageAr());
-            }
-
-        } catch (Exception ex) {
-            response.setResponseCode(String.valueOf(ResponseInfo.INTERNAL_SERVER_ERROR.getStatusCode()));
-            response.setResponseMessage(ResponseInfo.INTERNAL_SERVER_ERROR.getMessage());
-            response.setResponseMessageAr(ResponseInfo.INTERNAL_SERVER_ERROR.getMessageAr());
+                    () -> new DataNotFoundException("User: " + userName + "Not Found"));// user for testing FileNet
+            Long deptId = user.getDepartment().getDeptId();
+            return classificationsRepo.findByClassDept_Departments_DeptId(deptId);
         }
-        return response;
     }
-
-
 }
+
+
+

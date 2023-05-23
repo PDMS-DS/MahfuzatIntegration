@@ -3,17 +3,17 @@ package com.dataserve.archivemanagement.service;
 import com.dataserve.archivemanagement.model.ClassDept;
 import com.dataserve.archivemanagement.repository.ClassDeptRepo;
 
-import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-public class ClassDeptServiceImpl implements ClassDeptService{
-
-    private final ClassDeptRepo classDeptRepo ;
+public class ClassDeptServiceImpl implements ClassDeptService {
+    @Autowired
+    private ClassDeptRepo classDeptRepo;
 
     @Override
     public List<ClassDept> findAll() {
@@ -25,5 +25,5 @@ public class ClassDeptServiceImpl implements ClassDeptService{
         return Optional.empty();
     }
 
-    
+
 }

@@ -1,5 +1,7 @@
 package com.dataserve.archivemanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Type;
 
 import lombok.Getter;
@@ -20,7 +22,7 @@ import java.util.Set;
 public class Groups {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "GROUP_ID", nullable = false)
     private Long groupId;
 
@@ -33,11 +35,11 @@ public class Groups {
     @Column(name = "GROUPLDAP", nullable = true)
     private String groupLdap;
 
-    @Column(name = "ENABLED", nullable = true )
+    @Column(name = "ENABLED", nullable = true)
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean enabled;
 
-    @Column(name = "ACTIVE", nullable = true )
+    @Column(name = "ACTIVE", nullable = true)
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean active;
 
@@ -55,16 +57,7 @@ public class Groups {
 //    @ManyToMany(fetch = FetchType.LAZY,
 //            cascade = {
 //                    CascadeType.ALL
-//            },mappedBy = "groups")
-//    Set<Users> users = new HashSet<>();
-//
-//    public Set<Users> getUsers() {
-//		return users;
-//	}
-//
-//	public void setUsers(Set<Users> users) {
-//		this.users = users;
-//	}
+//            }, mappedBy = "groups")
+//    Set<AppUsers> users = new HashSet<>();
 
-	
 }

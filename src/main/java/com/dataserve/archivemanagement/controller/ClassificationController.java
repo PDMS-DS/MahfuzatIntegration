@@ -2,24 +2,21 @@ package com.dataserve.archivemanagement.controller;
 
 import com.dataserve.archivemanagement.exception.ResourceNotFoundException;
 import com.dataserve.archivemanagement.model.Classifications;
-import com.dataserve.archivemanagement.model.dto.response.ClassificationResponse;
-import com.dataserve.archivemanagement.service.BoxService;
 import com.dataserve.archivemanagement.service.ClassificationsService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/physicalArchive")
-@RequiredArgsConstructor
 public class ClassificationController {
-
-    private final ClassificationsService classificationsService;
+    @Autowired
+    private ClassificationsService classificationsService;
 
     @GetMapping("/classifications")
-    public ResponseEntity<ClassificationResponse> getClassifications() {
+    public ResponseEntity<List<Classifications>> getClassifications() {
         return ResponseEntity.ok(classificationsService.listClassifications());
     }
 
@@ -39,7 +36,7 @@ public class ClassificationController {
 
     @PutMapping("/classifications/{id}")
     public ResponseEntity<Classifications> updateClassifications(@PathVariable(value = "id") Long classificationsId,
-                                                 @Valid @RequestBody Classifications classificationsDetails) throws ResourceNotFoundException {
+                                                                 @Valid @RequestBody Classifications classificationsDetails) throws ResourceNotFoundException {
         Classifications classifications = classificationsService.findById(classificationsId)
                 .orElseThrow(() -> new ResourceNotFoundException("classifications not found for this id :: " + classificationsId));
         classifications.setClassCode(classificationsDetails.getClassCode());

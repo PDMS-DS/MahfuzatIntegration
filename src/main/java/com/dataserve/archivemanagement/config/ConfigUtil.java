@@ -1,5 +1,7 @@
 package com.dataserve.archivemanagement.config;
 
+import jdk.javadoc.doclet.Doclet;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
@@ -12,8 +14,6 @@ import java.util.Properties;
 @Component
 public class ConfigUtil {
 
-
-
     public   String fetchProperties(String key){
         Properties properties = new Properties();
         try {
@@ -25,5 +25,13 @@ public class ConfigUtil {
         }
         return (String) properties.get(key);
     }
+
+
+
+
+
+
+
+
 }
 

@@ -7,13 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "USERS")
 @Getter
 @Setter
 @NoArgsConstructor
-public class AppUsers  {
+public class AppUsers {
 
 
     @Id
@@ -38,7 +40,7 @@ public class AppUsers  {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isActive;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DEPARTMENT_ID")
     private Departments department;
 
@@ -55,15 +57,15 @@ public class AppUsers  {
 //    Set<Departments> depts = new HashSet<>();
 
 
-//    @ManyToMany(fetch = FetchType.LAZY,
-//            cascade = {
-//                    CascadeType.ALL
-//            })
-//    @JoinTable(
-//            name = "USER_GROUPS",
-//            joinColumns = @JoinColumn(name = "USER_ID"),
-//            inverseJoinColumns = @JoinColumn(name = "GROUP_ID"))
-//    Set<Groups> groups = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.ALL
+            })
+    @JoinTable(
+            name = "USERS_GROUPS",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "GROUP_ID"))
+    Set<Groups> groups = new HashSet<>();
 // 
 
 

@@ -29,16 +29,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AppRequestFilter appRequestFilter;
 
+    private static final String[] AUTH_WHITELIST = {
+
+            "/physicalArchive/authenticate",
+//            // -- Swagger UI v2
+//            "/v2/api-docs",
+//            "/swagger-resources",
+//            "/swagger-resources/**",
+//            "/configuration/ui",
+//            "/configuration/security",
+//            "/swagger-ui.html",
+//            "/webjars/**",
+//             -- Swagger UI v3 (OpenAPI)
+            "/v3/api-docs/**",
+            "/swagger-ui/**"};
+
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers("/physicalArchive/authenticate").permitAll().
+                .authorizeRequests().antMatchers(AUTH_WHITELIST).permitAll().
                 anyRequest().authenticated().and().
                 exceptionHandling().authenticationEntryPoint(jwtUnAuthResponse).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity.addFilterBefore(appRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(appUserService).passwordEncoder(passwordEncoder());
