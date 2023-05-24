@@ -1,18 +1,17 @@
 package com.dataserve.archivemanagement.service;
 
 
+import com.dataserve.archivemanagement.model.AppUsers;
+import com.dataserve.archivemanagement.model.LoginRequest;
+import com.dataserve.archivemanagement.model.dto.TokenResponse;
 
-import java.util.Optional;
-
-import com.dataserve.archivemanagement.model.Users;
-import com.dataserve.archivemanagement.model.dto.response.UserResponse;
+import java.util.List;
 
 public interface UserService {
 
-    public UserResponse listUsers();
+    List<AppUsers> listUsers();
 
-
-
+     TokenResponse findByUserName(LoginRequest loginRequest);
 
 
 }

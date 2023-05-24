@@ -7,9 +7,9 @@ import com.dataserve.archivemanagement.model.ClassDept;
 
 public interface ClassDeptService {
 
-    public List<ClassDept> findAll();
+    List<ClassDept> findAll();
 
-    public Optional<ClassDept> findById(Long theId);
+    Optional<ClassDept> findById(Long theId);
 
 
 }

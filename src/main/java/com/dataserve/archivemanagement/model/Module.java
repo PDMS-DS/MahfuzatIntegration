@@ -1,5 +1,6 @@
 package com.dataserve.archivemanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -27,7 +28,8 @@ public class Module {
 	@Column(name = "MODULE_NAME_EN", nullable = true)
 	private String moduleNameEn;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "module")
-	private Set<Permissions> permissionsM;
+//	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "module")
+//	@JsonBackReference
+//	private Set<Permissions> permissionsM;
 
 }
