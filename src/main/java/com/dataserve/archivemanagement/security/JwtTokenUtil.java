@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.dataserve.archivemanagement.model.LoginRequest;
+import com.dataserve.archivemanagement.model.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -23,8 +25,19 @@ public class JwtTokenUtil implements Serializable {
     @Value("${jwt.secret}")
     private String secretKey;
 
+
     public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+        String claimFromToken = getClaimFromToken(token, Claims::getSubject);
+        String id = getClaimFromToken(token, Claims::getId);
+        return claimFromToken;
+    }
+
+    public UserDTO getUsernameAndPasswordFromToken(String token) {
+        UserDTO userDTO = new UserDTO();
+        token = token.substring(7);
+        userDTO.setUserNameLdap(getClaimFromToken(token, Claims::getSubject));
+        userDTO.setPassword(getClaimFromToken(token, Claims::getId));
+        return userDTO;
     }
 
     public Date getExpirationDateFromToken(String token) {
@@ -50,13 +63,13 @@ public class JwtTokenUtil implements Serializable {
         return false;
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, String password) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        return doGenerateToken(claims, userDetails.getUsername(), password);
     }
 
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+    private String doGenerateToken(Map<String, Object> claims, String subject, String password) {
+        return Jwts.builder().setClaims(claims).setSubject(subject).setId(password).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtTokenValidity * 1000)).signWith(SignatureAlgorithm.HS512, secretKey).compact();
     }
 

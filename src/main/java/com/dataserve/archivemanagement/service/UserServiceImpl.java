@@ -1,6 +1,7 @@
 package com.dataserve.archivemanagement.service;
 
 
+import com.dataserve.archivemanagement.exception.ConnectionException;
 import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.model.Groups;
 import com.dataserve.archivemanagement.model.LoginRequest;
@@ -8,6 +9,7 @@ import com.dataserve.archivemanagement.model.Permissions;
 import com.dataserve.archivemanagement.model.dto.TokenResponse;
 import com.dataserve.archivemanagement.repository.PermissionRepo;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
+import com.dataserve.archivemanagement.util.FileNetConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
@@ -34,6 +36,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private PermissionRepo permissionRepo;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    private String password;
 
     @Value("${platform.module.permission}")
     private String modulePermission;
@@ -50,23 +53,33 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String fileNetPassword = "$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6";
-        AppUsers existingUser = usersRepo.findByUserEnName(username).orElseThrow(() -> new DataNotFoundException("User not found with username: " + username));
+
+//        String fileNetPassword = "$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6";
+//        AppUsers existingUser = usersRepo.findByUserNameLdap(username).orElseThrow(() -> new DataNotFoundException("User not found with username: " + username));
         // replace it with file net api response
-        return new User(existingUser.getUserEnName(), fileNetPassword,
+        // file net connection manager
+        return new User(username, getPassword(),
                 //getAuthorities replace it
                 new ArrayList<>());
     }
 
 
     public TokenResponse findByUserName(LoginRequest loginRequest) {
-        AppUsers existingUser = usersRepo.findByUserEnName(loginRequest.getUsername()).orElseThrow(() -> new DataNotFoundException("user not found"));
+        setPassword(loginRequest.getPassword());
+        AppUsers existingUser = usersRepo.findByUserNameLdap(loginRequest.getUsername()).orElseThrow(() -> new DataNotFoundException("user not found"));
         TokenResponse tokenResponse = new TokenResponse();
-        tokenResponse.setJwtToken(jwtTokenUtil.generateToken(loadUserByUsername(loginRequest.getUsername())));
-        if (existingUser.getGroups() != null && !existingUser.getGroups().isEmpty()) {
-            tokenResponse.setPermissions(getUserPermissions(existingUser.getGroups()));
+        FileNetConnection fileNetConnection = new FileNetConnection();
+        try {
+            fileNetConnection.connect(loginRequest.getUsername(), loginRequest.getPassword());
+            tokenResponse.setJwtToken(jwtTokenUtil.generateToken(loadUserByUsername(existingUser.getUserNameLdap()), loginRequest.getPassword()));
+            if (existingUser.getGroups() != null && !existingUser.getGroups().isEmpty()) {
+                tokenResponse.setPermissions(getUserPermissions(existingUser.getGroups()));
+            }
+            return tokenResponse;
+        } catch (ConnectionException e) {
+            throw new RuntimeException(e);
         }
-        return tokenResponse;
+
 
     }
 
@@ -99,8 +112,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     }
 
+    public String getPassword() {
+        return password;
+    }
 
-    //    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
+    public void setPassword(String password) {
+        this.password = password;
+    }
+//    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
 //        List<GrantedAuthority> authorities
 //                = new ArrayList<>();
 //        for (Role role : roles) {

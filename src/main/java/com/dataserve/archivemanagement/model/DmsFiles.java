@@ -27,7 +27,7 @@ import lombok.Setter;
 public class DmsFiles {
 	@Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name = "FILE_ID", nullable = false)
+	@Column(name = "FILE_ID", nullable = false)
 	private Long fileId;
 	
 	@Column(name = "DOCUMENT_ID", nullable = false)

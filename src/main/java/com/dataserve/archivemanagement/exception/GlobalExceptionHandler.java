@@ -27,6 +27,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.NOT_FOUND.value());
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<?> serviceException(ServiceException ex, WebRequest request) {
+        ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.NOT_FOUND.value());
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> globleExcpetionHandler(Exception ex, WebRequest request) {

@@ -15,7 +15,7 @@ public interface ClassificationsRepo extends JpaRepository<Classifications, Long
     @Query("From Classifications b "
             + " left join fetch b.folder ")
     List<Classifications> listClassifications();
-    List<Classifications> findByClassDept_Departments_DeptId(Long deptId);
 
+    List<Classifications> findByClassDept_Departments_DeptId(Long deptId);
 
 }

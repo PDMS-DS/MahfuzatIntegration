@@ -31,6 +31,8 @@ public class AppUsers {
 
     @Column(name = "UsernameLDAP", nullable = true)
     private String userNameLdap;
+    @Transient
+    private String password;
 
     @Column(name = "IsLogin", nullable = true)
     @Type(type = "org.hibernate.type.NumericBooleanType")

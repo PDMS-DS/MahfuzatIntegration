@@ -20,10 +20,12 @@ public class UserDTO {
     private Long userId;
     private String userArName;
     private String userEnName;
+    private String password;
 
     private String userNameLdap;
     private boolean isLogin;
     private boolean isActive;
+
 
 
 
