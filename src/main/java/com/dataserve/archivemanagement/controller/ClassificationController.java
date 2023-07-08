@@ -19,7 +19,7 @@ public class ClassificationController {
 
 
     @GetMapping("/classifications")
-    public ResponseEntity<List<Classifications>> getClassifications( @RequestHeader(name = "Authorization") String token) {
+    public ResponseEntity<List<Classifications>> getClassifications(@RequestHeader(name = "Authorization") String token) {
         return ResponseEntity.ok(classificationsService.listClassifications(token));
     }
 
@@ -36,9 +36,7 @@ public class ClassificationController {
     public ResponseEntity<ClassPropertiesDTO> getClassProperties(
             @RequestHeader(name = "Authorization") String token,
             @PathVariable String symbolicName) {
-
         return new ResponseEntity<>(classificationsService.findClassProperties(symbolicName, token), HttpStatus.OK);
-
     }
 
 

@@ -124,6 +124,7 @@ public class FileNetService {
             document.save(RefreshMode.REFRESH);
             return document;
         } catch (Exception e) {
+
             throw new ServiceException("Failed to create document", e);
         }
     }
