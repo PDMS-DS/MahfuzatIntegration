@@ -118,13 +118,13 @@ public class FileNetService {
                 }
                 setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
             }
-
+            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
             document.set_ContentElements(getContentElements(files));
             document.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
             document.save(RefreshMode.REFRESH);
             return document;
         } catch (Exception e) {
-
+            e.printStackTrace();
             throw new ServiceException("Failed to create document", e);
         }
     }

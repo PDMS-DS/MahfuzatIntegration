@@ -1,5 +1,6 @@
 package com.dataserve.archivemanagement.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,7 @@ public class CreateDocumentDTO {
 	private List<PropertyDTO> properties;
     private String creator;
     private String documentClassName;
-//    private String documentTitle;
+    @JsonProperty("DocumentTitle")
+    private String documentTitle;
 
 }

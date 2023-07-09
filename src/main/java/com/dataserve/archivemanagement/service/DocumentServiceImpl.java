@@ -56,6 +56,7 @@ public class DocumentServiceImpl implements DocumentService {
 
             UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document, filesList);
+
             String result = newDocument.get_Id().toString();
 
             LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
