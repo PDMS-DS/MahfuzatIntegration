@@ -118,7 +118,7 @@ public class FileNetService {
                 }
                 setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
             }
-            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
+//            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
             document.set_ContentElements(getContentElements(files));
             document.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
             document.save(RefreshMode.REFRESH);

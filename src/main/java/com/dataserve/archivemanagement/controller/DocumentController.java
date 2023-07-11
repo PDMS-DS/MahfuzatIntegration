@@ -36,7 +36,7 @@ public class DocumentController {
 
 
     @PostMapping(value = "/createDocument", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> createDocument(@RequestHeader(name = "Authorization") String token, @RequestPart(value = "document") @Valid CreateDocumentDTO document, @RequestPart("files") List<MultipartFile> files) {
+    public ResponseEntity<String> createDocument(@RequestHeader(name = "Authorization") String token, @RequestPart(value = "document") String document, @RequestPart("files") List<MultipartFile> files) {
         return new ResponseEntity<>(documentService.createDocument(token, document, files), HttpStatus.OK);
 
     }
