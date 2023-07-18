@@ -4,6 +4,7 @@ import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
 import com.dataserve.archivemanagement.model.AppUsers;
 import com.dataserve.archivemanagement.model.DMSAudit;
+import com.dataserve.archivemanagement.model.Departments;
 import com.dataserve.archivemanagement.model.DmsFiles;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
@@ -85,10 +86,11 @@ public class DocumentServiceImpl implements DocumentService {
             audit.run();
             // save Document info on DB
 
-            String documentId = result.substring(1,result.length() - 1);
+            String documentId = result.substring(1, result.length() - 1);
 
             AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
-            DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser.getUserId());
+
+            DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser);
             if (dmsFiles != null) {
                 addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
             }
@@ -102,7 +104,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
-    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, Long userId) {
+    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser) {
 
         DmsFiles dmsFiles = new DmsFiles();
         dmsFiles.setDocumentId(documentId);
@@ -111,8 +113,9 @@ public class DocumentServiceImpl implements DocumentService {
         dmsFiles.setFolderNo(Long.valueOf(documentDTO.getFolderNo()));
         dmsFiles.setNoPages(Long.valueOf(documentDTO.getNumOfPages()));
         dmsFiles.setOCRStatus(0);
-        dmsFiles.setUserId(userId);
+        dmsFiles.setUserId(existingUser.getUserId());
         dmsFiles.setSourceId(1);
+        dmsFiles.setDepartments(existingUser.getDepartment());
         dmsFiles.setCreateDate(new Date());
         dmsFiles.setModifiedDate(new Date());
         return dmsFilesRepository.save(dmsFiles);
