@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -23,7 +22,6 @@ public class CreateDocumentDTO {
     private Integer numOfPages;
     private Integer isOriginal;
     private List<CustomDocument> uploadDocumentList;
-    private String fileName;
 
 
 }

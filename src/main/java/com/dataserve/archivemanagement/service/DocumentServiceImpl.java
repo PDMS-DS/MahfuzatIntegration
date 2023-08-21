@@ -4,10 +4,8 @@ import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
 import com.dataserve.archivemanagement.model.AppUsers;
 import com.dataserve.archivemanagement.model.DMSAudit;
-import com.dataserve.archivemanagement.model.Departments;
 import com.dataserve.archivemanagement.model.DmsFiles;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
-import com.dataserve.archivemanagement.model.dto.CustomDocument;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UserDTO;
 import com.dataserve.archivemanagement.repository.DmsAuditRepository;
@@ -18,28 +16,20 @@ import com.dataserve.archivemanagement.util.AuditUtil;
 import com.dataserve.archivemanagement.util.LogUtil;
 import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.filenet.api.collection.ContentElementList;
-import com.filenet.api.core.ContentTransfer;
 import com.filenet.api.core.Document;
-import com.filenet.api.core.Factory;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
+import org.springframework.web.multipart.MultipartFile;;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.apache.tomcat.util.codec.binary.Base64.decodeBase64;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -184,7 +174,6 @@ public class DocumentServiceImpl implements DocumentService {
         return dmsAuditRepository.save(dmsAudit);
 
     }
-
 
     public String updateDocument(String token, UpdateDocumentDTO document, List<MultipartFile> files) {
 
