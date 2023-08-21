@@ -1,12 +1,6 @@
 package com.dataserve.archivemanagement.service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +16,7 @@ import com.dataserve.archivemanagement.exception.ServiceException;
 import com.dataserve.archivemanagement.model.dto.*;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
 import com.dataserve.archivemanagement.util.FileNetConnection;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -129,6 +124,29 @@ public class FileNetService {
         }
     }
 
+    public Document createDocument(String username, String password, CreateDocumentDTO dto) throws ServiceException {
+        try (FileNetConnection con = new FileNetConnection()) {
+            ObjectStore objectStore = con.connect(username, password);
+            Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
+            Properties docProps = document.getProperties();
+            for (PropertyDTO propDto : dto.getProperties()) {
+                String className = getPropertyDtoClassName(propDto);
+                if (className == null) {
+                    throw new ServiceException("DataType " + propDto.getDataType() + " is not supported");
+                }
+                setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
+            }
+//            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
+            document.set_ContentElements(getContentElementsBase64(dto.getUploadDocumentList()));
+            document.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
+            document.save(RefreshMode.REFRESH);
+            return document;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServiceException("Failed to create document", e);
+        }
+    }
+
     public Document updateDocumentProperties(String username, String password, UpdateDocumentDTO dto) throws ServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             ObjectStore objectStore = con.connect(username, password);
@@ -155,8 +173,7 @@ public class FileNetService {
             // Get the Reservation object from the Document object.
             Document reservation = (Document) doc.get_Reservation();
 
-            @SuppressWarnings("deprecation")
-            ContentElementList contentList = Factory.ContentTransfer.createList();
+            @SuppressWarnings("deprecation") ContentElementList contentList = Factory.ContentTransfer.createList();
             for (File file : filesList) {
                 ContentTransfer ctObject = Factory.ContentTransfer.createInstance();
                 FileInputStream fileIS = new FileInputStream(file.getAbsolutePath());
@@ -382,6 +399,28 @@ public class FileNetService {
         return contentElementList;
     }
 
+    private ContentElementList getContentElementsBase64(List<CustomDocument> documents) throws ServiceException {
+        ContentElementList contentElementList = Factory.ContentElement.createList();
+        for (CustomDocument file : documents) {
+            try {
+                ContentTransfer content = Factory.ContentTransfer.createInstance();
+                String contentType = getMimeTypeFromPath(file.getFileExt());
+                content.set_RetrievalName(file.getFileName());
+                if (contentType == null || contentType.length() == 0) contentType = "text/plain";
+                content.set_ContentType(contentType);
+                byte[] contentbytes = null;
+                contentbytes = Base64.decodeBase64(file.getSource());
+                ByteArrayInputStream is = new ByteArrayInputStream(contentbytes);
+                content.setCaptureSource(is);
+                contentElementList.add(content);
+            } catch (Exception e) {
+                String message = "Error adding content to element list" + (file == null ? "" : " for file '" + file.getFileName() + "'");
+                throw new ServiceException(message, e);
+            }
+        }
+        return contentElementList;
+    }
+
     private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDescriptionList propsDescList) throws ServiceException {
         try {
             List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
@@ -419,6 +458,64 @@ public class FileNetService {
             throw new ServiceException("Failed to get Class Properties List", e);
         }
     }
+
+    public String getMimeTypeFromPath(String filePath) {
+        filePath = filePath.toLowerCase();
+        if (filePath.endsWith("gif")) {
+            return "image/gif";
+        } else if (filePath.endsWith("jpg") || filePath.endsWith("jpeg") || filePath.endsWith("jp")) {
+            return "image/jpeg";
+        } else if (filePath.endsWith("png")) {
+            return "image/png";
+        } else if (filePath.endsWith("bmp")) {
+            return "image/bmp";
+        } else if (filePath.endsWith("tif") || filePath.endsWith("tiff")) {
+            return "image/tiff";
+        } else if (filePath.endsWith("pdf")) {
+            return "application/pdf";
+        } else if (filePath.endsWith("mda")) {
+            return "application/vnd.ibm.modcap";
+        } else if (filePath.endsWith("afp")) {
+            return "application/afp";
+        } else if (filePath.endsWith("txt") || filePath.endsWith("tmp")) {
+            return "text/plain";
+        } else if (filePath.endsWith("htm") || filePath.endsWith("html")) {
+            return "text/html";
+        } else if (filePath.endsWith("rtf")) {
+            return "text/richtext";
+        } else if (filePath.endsWith("log")) {
+            return "text/plain";
+        } else if (filePath.endsWith("rtf")) {
+            return "text/richtext";
+        } else if (filePath.endsWith("ppt") || filePath.endsWith("pptx") || filePath.endsWith("pot") || filePath.endsWith("ppa") || filePath.endsWith("pps") || filePath.endsWith("pwz")) {
+            return "application/vnd.ms-powerpoint";
+        } else if (filePath.endsWith("xls") || filePath.endsWith("xlt") || filePath.endsWith("xlsx") || filePath.endsWith("xlm") || filePath.endsWith("xld") || filePath.endsWith("xla") || filePath.endsWith("xlc") || filePath.endsWith("xlw") || filePath.endsWith("xll")) {
+            return "application/vnd.ms-excel";
+        } else if (filePath.endsWith("asf") || filePath.endsWith("asx")) {
+            return "video/x-ms-asf";
+        } else if (filePath.endsWith("wma")) {
+            return "audio/x-ms-wma";
+        } else if (filePath.endsWith("wax")) {
+            return "audio/x-ms-wax";
+        } else if (filePath.endsWith("wmv")) {
+            return "audio/x-ms-wmv";
+        } else if (filePath.endsWith("wvx")) {
+            return "video/x-ms-wvx";
+        } else if (filePath.endsWith("wm")) {
+            return "video/x-ms-wm";
+        } else if (filePath.endsWith("wmx")) {
+            return "video/x-ms-wmx";
+        } else if (filePath.endsWith("wmz")) {
+            return "application/x-ms-wmz";
+        } else if (filePath.endsWith("wmd")) {
+            return "application/x-ms-wmd";
+        } else if (filePath.endsWith("doc") || filePath.endsWith("dot") || filePath.endsWith("docx") || filePath.endsWith("rtf")) {
+            return "application/msword";
+        } else {
+            return "application/octet-stream";
+        }
+    }
+
 
     private String getPropertyDtoClassName(PropertyDTO propDto) throws Exception {
         if (propDto.getPropertyValue().startsWith("[")) {

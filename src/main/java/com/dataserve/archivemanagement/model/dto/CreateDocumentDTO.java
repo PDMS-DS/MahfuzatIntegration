@@ -22,6 +22,8 @@ public class CreateDocumentDTO {
     private SaveType saveType;
     private Integer numOfPages;
     private Integer isOriginal;
+    private List<CustomDocument> uploadDocumentList;
+    private String fileName;
 
 
 }

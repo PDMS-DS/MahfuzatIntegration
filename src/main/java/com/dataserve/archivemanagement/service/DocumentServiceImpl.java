@@ -7,6 +7,7 @@ import com.dataserve.archivemanagement.model.DMSAudit;
 import com.dataserve.archivemanagement.model.Departments;
 import com.dataserve.archivemanagement.model.DmsFiles;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.CustomDocument;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UserDTO;
 import com.dataserve.archivemanagement.repository.DmsAuditRepository;
@@ -17,20 +18,28 @@ import com.dataserve.archivemanagement.util.AuditUtil;
 import com.dataserve.archivemanagement.util.LogUtil;
 import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.filenet.api.collection.ContentElementList;
+import com.filenet.api.core.ContentTransfer;
 import com.filenet.api.core.Document;
+import com.filenet.api.core.Factory;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.apache.tomcat.util.codec.binary.Base64.decodeBase64;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -52,6 +61,7 @@ public class DocumentServiceImpl implements DocumentService {
     public String createDocument(String token, String document, List<MultipartFile> files) {
         try {
             CreateDocumentDTO documentDTO = new ObjectMapper().readValue(document, CreateDocumentDTO.class);
+
             if (documentDTO.getSaveType().equals(SaveType.SCAN_FILE) && documentDTO.getFolderNo() == null) {
                 throw new DataRequiredException("Folder Number is Required ");
             }
@@ -102,6 +112,45 @@ public class DocumentServiceImpl implements DocumentService {
             LogUtil.error("Failed to create document", e);
             throw new ServiceException("Failed to create document", e);
         }
+    }
+
+    @Override
+    public String createDocumentBase64(String token, CreateDocumentDTO document) {
+        try {
+            if (document.getSaveType().equals(SaveType.SCAN_FILE) && document.getFolderNo() == null) {
+                throw new DataRequiredException("Folder Number is Required ");
+            }
+            if (document.getSaveType().equals(SaveType.UPLOAD_FILE) && document.getNumOfPages() == null) {
+                throw new DataRequiredException("Number Of Pages is Required ");
+            }
+            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
+
+            String result = newDocument.get_Id().toString();
+
+            LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
+            JSONObject params = new JSONObject(document);
+            AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+            audit.run();
+            // save Document info on DB
+
+            String documentId = result.substring(1, result.length() - 1);
+
+            AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+            DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser);
+            if (dmsFiles != null) {
+                addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+            }
+            return documentId;
+
+        } catch (DataRequiredException e) {
+            throw new ServiceException(e.getMessage());
+        } catch (Exception e) {
+            LogUtil.error("Failed to create document", e);
+            throw new ServiceException("Failed to create document", e);
+        }
+
     }
 
     public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser) {
@@ -185,5 +234,64 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ServiceException("Failed to update document", e);
         }
     }
+
+
+    public String getMimeTypeFromPath(String filePath) {
+        filePath = filePath.toLowerCase();
+        if (filePath.endsWith("gif")) {
+            return "image/gif";
+        } else if (filePath.endsWith("jpg") || filePath.endsWith("jpeg") || filePath.endsWith("jp")) {
+            return "image/jpeg";
+        } else if (filePath.endsWith("png")) {
+            return "image/png";
+        } else if (filePath.endsWith("bmp")) {
+            return "image/bmp";
+        } else if (filePath.endsWith("tif") || filePath.endsWith("tiff")) {
+            return "image/tiff";
+        } else if (filePath.endsWith("pdf")) {
+            return "application/pdf";
+        } else if (filePath.endsWith("mda")) {
+            return "application/vnd.ibm.modcap";
+        } else if (filePath.endsWith("afp")) {
+            return "application/afp";
+        } else if (filePath.endsWith("txt") || filePath.endsWith("tmp")) {
+            return "text/plain";
+        } else if (filePath.endsWith("htm") || filePath.endsWith("html")) {
+            return "text/html";
+        } else if (filePath.endsWith("rtf")) {
+            return "text/richtext";
+        } else if (filePath.endsWith("log")) {
+            return "text/plain";
+        } else if (filePath.endsWith("rtf")) {
+            return "text/richtext";
+        } else if (filePath.endsWith("ppt") || filePath.endsWith("pptx") || filePath.endsWith("pot") || filePath.endsWith("ppa") || filePath.endsWith("pps") || filePath.endsWith("pwz")) {
+            return "application/vnd.ms-powerpoint";
+        } else if (filePath.endsWith("xls") || filePath.endsWith("xlt") || filePath.endsWith("xlsx") || filePath.endsWith("xlm") || filePath.endsWith("xld") || filePath.endsWith("xla") || filePath.endsWith("xlc") || filePath.endsWith("xlw") || filePath.endsWith("xll")) {
+            return "application/vnd.ms-excel";
+        } else if (filePath.endsWith("asf") || filePath.endsWith("asx")) {
+            return "video/x-ms-asf";
+        } else if (filePath.endsWith("wma")) {
+            return "audio/x-ms-wma";
+        } else if (filePath.endsWith("wax")) {
+            return "audio/x-ms-wax";
+        } else if (filePath.endsWith("wmv")) {
+            return "audio/x-ms-wmv";
+        } else if (filePath.endsWith("wvx")) {
+            return "video/x-ms-wvx";
+        } else if (filePath.endsWith("wm")) {
+            return "video/x-ms-wm";
+        } else if (filePath.endsWith("wmx")) {
+            return "video/x-ms-wmx";
+        } else if (filePath.endsWith("wmz")) {
+            return "application/x-ms-wmz";
+        } else if (filePath.endsWith("wmd")) {
+            return "application/x-ms-wmd";
+        } else if (filePath.endsWith("doc") || filePath.endsWith("dot") || filePath.endsWith("docx") || filePath.endsWith("rtf")) {
+            return "application/msword";
+        } else {
+            return "application/octet-stream";
+        }
+    }
+
 
 }
