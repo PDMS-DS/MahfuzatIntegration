@@ -49,7 +49,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse();
         StringBuilder stringBuilder = new StringBuilder();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            if (!stringBuilder.isEmpty())
+            if (stringBuilder.length() > 0 )
                 stringBuilder.append(", ");
             errorResponse.addValidationError(error.getField(), error.getDefaultMessage());
             stringBuilder.append(error.getDefaultMessage());

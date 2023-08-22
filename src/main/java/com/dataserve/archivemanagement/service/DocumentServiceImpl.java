@@ -17,11 +17,12 @@ import com.dataserve.archivemanagement.util.LogUtil;
 import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.filenet.api.core.Document;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;;
+import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
