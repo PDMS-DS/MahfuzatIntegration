@@ -160,23 +160,34 @@ public class DocumentServiceImpl implements DocumentService {
         StorageCenterType storageCenterType = storageCenter.getStorageCenterType();
         if (storageCenterType == null) throw new DataNotFoundException("Storage Center Type not valid");
         Classifications classifications = folder.getClassifications();
+        String saveType = "";
         if (classifications != null) {
             if (storageCenterType.getStorageCenterTypeId() != 3 && !storageCenterType.getStorageCenterTypeId().equals(classifications.getSaveType())) {
+                String savedType = saveType(classifications.getSaveType());
                 StringBuilder message = new StringBuilder(100);
                 message.append("Folder is associated to a Storage Center with save type '");
                 message.append(storageCenterType.getTypeEn());
                 message.append("' that doesn't match with classification save type '");
-//                message.append(classifications.getSaveType());
+                if (saveType != null) message.append(savedType);
                 message.append("'");
                 throw new ServiceException(message.toString());
             }
-
         } else {
             throw new DataNotFoundException("Classification not valid");
         }
         return true;
     }
 
+    private String saveType(Long type) {
+        if (type == 1) {
+            return "Permanent";
+        } else if (type == 2) {
+            return "Temporal";
+        } else if (type == 3) {
+            return "All";
+        }
+        return null;
+    }
 
     public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser) {
 
