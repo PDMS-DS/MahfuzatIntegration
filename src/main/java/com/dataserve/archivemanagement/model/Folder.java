@@ -27,7 +27,7 @@ import lombok.Setter;
 public class Folder {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FOLDER_ID", nullable = false)
     private Long folderId;
 
@@ -53,10 +53,13 @@ public class Folder {
 
     @Column(name = "SERIAL", nullable = true)
     private Long serial;
+    @JoinColumn(name = "CENTER_ID")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private StorageCenter storageCenter;
 
 
     @JsonBackReference
-    @ManyToOne(cascade = CascadeType.ALL, fetch  = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "CLASSIFICATION_ID")
     private Classifications classifications;
 

@@ -1,15 +1,15 @@
 package com.dataserve.archivemanagement.service;
 
+import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
-import com.dataserve.archivemanagement.model.AppUsers;
-import com.dataserve.archivemanagement.model.DMSAudit;
-import com.dataserve.archivemanagement.model.DmsFiles;
+import com.dataserve.archivemanagement.model.*;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UserDTO;
 import com.dataserve.archivemanagement.repository.DmsAuditRepository;
 import com.dataserve.archivemanagement.repository.DmsFilesRepository;
+import com.dataserve.archivemanagement.repository.FolderRepo;
 import com.dataserve.archivemanagement.repository.UsersRepo;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
 import com.dataserve.archivemanagement.util.AuditUtil;
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,55 +48,56 @@ public class DocumentServiceImpl implements DocumentService {
     private DmsAuditRepository dmsAuditRepository;
     @Autowired
     private UsersRepo usersRepo;
+    @Autowired
+    private FolderRepo folderRepo;
 
     @Override
     public String createDocument(String token, String document, List<MultipartFile> files) {
         try {
             CreateDocumentDTO documentDTO = new ObjectMapper().readValue(document, CreateDocumentDTO.class);
 
-            if (documentDTO.getSaveType().equals(SaveType.SCAN_FILE) && documentDTO.getFolderNo() == null) {
-                throw new DataRequiredException("Folder Number is Required ");
-            }
-            if (documentDTO.getSaveType().equals(SaveType.UPLOAD_FILE) && documentDTO.getNumOfPages() == null) {
-                throw new DataRequiredException("Number Of Pages is Required ");
-            }
-            List<File> filesList = new ArrayList<>();
-            files.stream().forEach(f -> {
-                try {
-                    byte[] bytes = f.getBytes();
-                    File file = Files.write(Paths.get(tempFilePath + File.separator + f.getOriginalFilename()), bytes).toFile();
-                    filesList.add(file);
-                } catch (IOException e) {
-                    LogUtil.error("Failed to recieve attachments", e);
+            if (validationBeforeSaveDocument(documentDTO)) {
+                if (documentDTO.getSaveType().equals(SaveType.UPLOAD_FILE) && documentDTO.getNumOfPages() == null) {
+                    throw new DataRequiredException("Number Of Pages is Required ");
                 }
-            });
-            if (files.size() != filesList.size()) {
-                throw new DataRequiredException("Failed to recieve attached files");
-            }
-            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-            Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), documentDTO, filesList);
+                List<File> filesList = new ArrayList<>();
+                files.stream().forEach(f -> {
+                    try {
+                        byte[] bytes = f.getBytes();
+                        File file = Files.write(Paths.get(tempFilePath + File.separator + f.getOriginalFilename()), bytes).toFile();
+                        filesList.add(file);
+                    } catch (IOException e) {
+                        LogUtil.error("Failed to recieve attachments", e);
+                    }
+                });
+                if (files.size() != filesList.size()) {
+                    throw new DataRequiredException("Failed to recieve attached files");
+                }
+                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+                Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), documentDTO, filesList);
 
-            String result = newDocument.get_Id().toString();
+                String result = newDocument.get_Id().toString();
 
-            LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
-            ObjectMapper mapper = new ObjectMapper();
+                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
+                ObjectMapper mapper = new ObjectMapper();
 //            String str = mapper.writeValueAsString(document);
-            JSONObject params = new JSONObject(document);
+                JSONObject params = new JSONObject(document);
 
-            params.put("files", filesList);
-            AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-            audit.run();
-            // save Document info on DB
+                params.put("files", filesList);
+                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+                audit.run();
+                // save Document info on DB
 
-            String documentId = result.substring(1, result.length() - 1);
+                String documentId = result.substring(1, result.length() - 1);
 
-            AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
+                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-            DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser);
-            if (dmsFiles != null) {
-                addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser);
+                if (dmsFiles != null) {
+                    addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                }
+                return documentId;
             }
-            return documentId;
 
         } catch (DataRequiredException e) {
             throw new ServiceException(e.getMessage());
@@ -103,46 +105,78 @@ public class DocumentServiceImpl implements DocumentService {
             LogUtil.error("Failed to create document", e);
             throw new ServiceException("Failed to create document", e);
         }
+        return null;
     }
 
     @Override
     public String createDocumentBase64(String token, CreateDocumentDTO document) {
         try {
-            if (document.getSaveType().equals(SaveType.SCAN_FILE) && document.getFolderNo() == null) {
-                throw new DataRequiredException("Folder Number is Required ");
+            if (validationBeforeSaveDocument(document)) {
+                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+                Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
+
+                String result = newDocument.get_Id().toString();
+
+                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
+                JSONObject params = new JSONObject(document);
+                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+                audit.run();
+                // save Document info on DB
+
+                String documentId = result.substring(1, result.length() - 1);
+
+                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser);
+                if (dmsFiles != null) {
+                    addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                }
+                return documentId;
             }
-            if (document.getSaveType().equals(SaveType.UPLOAD_FILE) && document.getNumOfPages() == null) {
-                throw new DataRequiredException("Number Of Pages is Required ");
-            }
-            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-            Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
-
-            String result = newDocument.get_Id().toString();
-
-            LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
-            JSONObject params = new JSONObject(document);
-            AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-            audit.run();
-            // save Document info on DB
-
-            String documentId = result.substring(1, result.length() - 1);
-
-            AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
-
-            DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser);
-            if (dmsFiles != null) {
-                addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-            }
-            return documentId;
 
         } catch (DataRequiredException e) {
             throw new ServiceException(e.getMessage());
         } catch (Exception e) {
             LogUtil.error("Failed to create document", e);
-            throw new ServiceException("Failed to create document", e);
+            throw new ServiceException(e.getMessage());
         }
-
+        return null;
     }
+
+    boolean validationBeforeSaveDocument(CreateDocumentDTO document) {
+        if (document.getSaveType().equals(SaveType.SCAN_FILE) && document.getFolderNo() == null) {
+            throw new DataRequiredException("Folder Number is Required ");
+        }
+        if (document.getSaveType().equals(SaveType.UPLOAD_FILE) && document.getNumOfPages() == null) {
+            throw new DataRequiredException("Number Of Pages is Required ");
+        }
+        Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
+        Long sumOfFiles = dmsFilesRepository.countByFolderNo(folder.getFolderId());
+        if (sumOfFiles >= folder.getCapacity() && folder.getCapacity() != 0) {
+            throw new ServiceException("Folder Capacity is Full");
+        }
+        StorageCenter storageCenter = folder.getStorageCenter();
+        if (storageCenter == null) throw new DataNotFoundException("Storage Center not valid");
+        StorageCenterType storageCenterType = storageCenter.getStorageCenterType();
+        if (storageCenterType == null) throw new DataNotFoundException("Storage Center Type not valid");
+        Classifications classifications = folder.getClassifications();
+        if (classifications != null) {
+            if (storageCenterType.getStorageCenterTypeId() != 3 && !storageCenterType.getStorageCenterTypeId().equals(classifications.getSaveType())) {
+                StringBuilder message = new StringBuilder(100);
+                message.append("Folder is associated to a Storage Center with save type '");
+                message.append(storageCenterType.getTypeEn());
+                message.append("' that doesn't match with classification save type '");
+//                message.append(classifications.getSaveType());
+                message.append("'");
+                throw new ServiceException(message.toString());
+            }
+
+        } else {
+            throw new DataNotFoundException("Classification not valid");
+        }
+        return true;
+    }
+
 
     public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser) {
 

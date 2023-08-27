@@ -23,6 +23,8 @@ public class Classifications {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CLASSIFICATION_ID", nullable = false)
     private Long classificationId;
+    @Column(name = "SAVE_TYPE")
+    private Long saveType;
 
     @Column(name = "CLASS_AR_NAME", nullable = true)
     private String classArName;
@@ -49,6 +51,7 @@ public class Classifications {
     @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private Set<Folder> folder;
+
 
 
 }
