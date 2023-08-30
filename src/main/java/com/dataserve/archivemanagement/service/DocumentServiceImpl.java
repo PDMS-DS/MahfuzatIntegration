@@ -57,6 +57,8 @@ public class DocumentServiceImpl implements DocumentService {
             CreateDocumentDTO documentDTO = new ObjectMapper().readValue(document, CreateDocumentDTO.class);
 
             if (validationBeforeSaveDocument(documentDTO)) {
+                Folder folder = folderRepo.findBySerial(Long.valueOf(documentDTO.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + documentDTO.getFolderNo()));
+
                 if (documentDTO.getSaveType().equals(SaveType.UPLOAD_FILE) && documentDTO.getNumOfPages() == null) {
                     throw new DataRequiredException("Number Of Pages is Required ");
                 }
@@ -92,7 +94,8 @@ public class DocumentServiceImpl implements DocumentService {
 
                 AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-                DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser);
+
+                DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser, folder.getFolderId());
                 if (dmsFiles != null) {
                     addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
                 }
@@ -112,6 +115,7 @@ public class DocumentServiceImpl implements DocumentService {
     public String createDocumentBase64(String token, CreateDocumentDTO document) {
         try {
             if (validationBeforeSaveDocument(document)) {
+                Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
                 UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
                 Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
 
@@ -127,7 +131,7 @@ public class DocumentServiceImpl implements DocumentService {
 
                 AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser);
+                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
                 if (dmsFiles != null) {
                     addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
                 }
@@ -189,13 +193,13 @@ public class DocumentServiceImpl implements DocumentService {
         return null;
     }
 
-    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser) {
+    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser, Long folderId) {
 
         DmsFiles dmsFiles = new DmsFiles();
         dmsFiles.setDocumentId(documentId);
         dmsFiles.setDocumentClass(documentDTO.getDocumentClassName());
         dmsFiles.setDocumentName(documentDTO.getDocumentTitle());
-        dmsFiles.setFolderNo(Long.valueOf(documentDTO.getFolderNo()));
+        dmsFiles.setFolderNo(Long.valueOf(folderId));
         dmsFiles.setNoPages(Long.valueOf(documentDTO.getNumOfPages()));
         dmsFiles.setOCRStatus(0);
         dmsFiles.setUserId(existingUser.getUserId());
