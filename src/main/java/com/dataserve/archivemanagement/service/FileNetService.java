@@ -143,7 +143,7 @@ public class FileNetService {
             return document;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServiceException("Failed to create document", e);
+            throw new ServiceException("Failed to create document cause: " + e.getMessage());
         }
     }
 

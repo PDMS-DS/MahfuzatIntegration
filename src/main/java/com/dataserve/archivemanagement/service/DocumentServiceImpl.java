@@ -5,12 +5,10 @@ import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
 import com.dataserve.archivemanagement.model.*;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.PropertyDTO;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UserDTO;
-import com.dataserve.archivemanagement.repository.DmsAuditRepository;
-import com.dataserve.archivemanagement.repository.DmsFilesRepository;
-import com.dataserve.archivemanagement.repository.FolderRepo;
-import com.dataserve.archivemanagement.repository.UsersRepo;
+import com.dataserve.archivemanagement.repository.*;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
 import com.dataserve.archivemanagement.util.AuditUtil;
 import com.dataserve.archivemanagement.util.LogUtil;
@@ -30,7 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,6 +46,8 @@ public class DocumentServiceImpl implements DocumentService {
     private DmsFilesRepository dmsFilesRepository;
     @Autowired
     private DmsAuditRepository dmsAuditRepository;
+    @Autowired
+    private DMSPropertyAuditRepository dmsPropertyAuditRepository;
     @Autowired
     private UsersRepo usersRepo;
     @Autowired
@@ -97,7 +99,8 @@ public class DocumentServiceImpl implements DocumentService {
 
                 DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser, folder.getFolderId());
                 if (dmsFiles != null) {
-                    addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                    DMSAudit dmsAudit = addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                    saveDMSPropertyAudit(documentDTO.getProperties(), dmsAudit.getAuditId());
                 }
                 return documentId;
             }
@@ -115,27 +118,28 @@ public class DocumentServiceImpl implements DocumentService {
     public String createDocumentBase64(String token, CreateDocumentDTO document) {
         try {
             if (validationBeforeSaveDocument(document)) {
-                Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
-                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-                Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
+            Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
+            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
 
-                String result = newDocument.get_Id().toString();
+            String result = newDocument.get_Id().toString();
 
-                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
-                JSONObject params = new JSONObject(document);
-                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-                audit.run();
-                // save Document info on DB
+            LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
+            JSONObject params = new JSONObject(document);
+            AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+            audit.run();
+            // save Document info on DB
 
-                String documentId = result.substring(1, result.length() - 1);
+            String documentId = result.substring(1, result.length() - 1);
 
-                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
+            AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
-                if (dmsFiles != null) {
-                    addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-                }
-                return documentId;
+            DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
+            if (dmsFiles != null) {
+                DMSAudit dmsAudit = addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                saveDMSPropertyAudit(document.getProperties(), dmsAudit.getAuditId());
+            }
+            return documentId;
             }
 
         } catch (DataRequiredException e) {
@@ -178,6 +182,15 @@ public class DocumentServiceImpl implements DocumentService {
             }
         } else {
             throw new DataNotFoundException("Classification not valid");
+        }
+        return true;
+    }
+
+    public Boolean saveDMSPropertyAudit(List<PropertyDTO> properties, Long dmsAuditId) {
+        if (properties != null && properties.size() > 0) {
+            List<DMSPropertiesAudit> dmsPropertiesAudits = properties.stream().map(propertyDTO -> new DMSPropertiesAudit(
+                    propertyDTO.getSymbolicName(), propertyDTO.getPropertyValue(), new DMSAudit(dmsAuditId))).collect(Collectors.toList());
+            dmsPropertyAuditRepository.saveAll(dmsPropertiesAudits);
         }
         return true;
     }

@@ -35,5 +35,10 @@ public class DMSAudit {
     @Column(name = "DATE")
     private Date createDate;
 
+   public DMSAudit(Long auditId) {
+        this.auditId = auditId;
+
+    }
+
 
 }
