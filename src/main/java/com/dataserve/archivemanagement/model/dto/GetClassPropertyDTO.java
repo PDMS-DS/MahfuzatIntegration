@@ -16,5 +16,8 @@ public class GetClassPropertyDTO {
 	private List<String> choicListValues;
 	private String edsChoiceListName;
 	private List<EDSChoiceDTO> edsChoiceListValues;
+	private String desc;
+	private String descAr;
+	private String descEn;
 
 }

@@ -1,6 +1,13 @@
 package com.dataserve.archivemanagement.service;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,23 +19,33 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import com.dataserve.archivemanagement.exception.ServiceException;
-import com.dataserve.archivemanagement.model.dto.*;
-import com.dataserve.archivemanagement.security.JwtTokenUtil;
-import com.dataserve.archivemanagement.util.FileNetConnection;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.filenet.api.admin.Choice;
-import com.filenet.api.admin.ChoiceList;
+import com.dataserve.archivemanagement.exception.ServiceException;
+import com.dataserve.archivemanagement.model.dto.ClassPropertiesDTO;
+import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.CustomDocument;
+import com.dataserve.archivemanagement.model.dto.GetClassPropertyDTO;
+import com.dataserve.archivemanagement.model.dto.GetDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.PropertyDTO;
+import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.UserDTO;
+import com.dataserve.archivemanagement.security.JwtTokenUtil;
+import com.dataserve.archivemanagement.util.FileNetConnection;
+import com.filenet.api.admin.ClassDefinition;
+import com.filenet.api.admin.LocalizedString;
+import com.filenet.api.admin.PropertyDefinition;
+import com.filenet.api.admin.PropertyTemplate;
 import com.filenet.api.collection.BooleanList;
 import com.filenet.api.collection.ContentElementList;
 import com.filenet.api.collection.DateTimeList;
 import com.filenet.api.collection.Float64List;
 import com.filenet.api.collection.Integer32List;
-import com.filenet.api.collection.PropertyDescriptionList;
+import com.filenet.api.collection.LocalizedStringList;
+import com.filenet.api.collection.PropertyDefinitionList;
 import com.filenet.api.collection.StringList;
 import com.filenet.api.constants.AutoClassify;
 import com.filenet.api.constants.CheckinType;
@@ -39,9 +56,8 @@ import com.filenet.api.constants.RefreshMode;
 import com.filenet.api.core.ContentTransfer;
 import com.filenet.api.core.Document;
 import com.filenet.api.core.Factory;
+import com.filenet.api.core.Factory.DocumentClassDefinition;
 import com.filenet.api.core.ObjectStore;
-import com.filenet.api.meta.ClassDescription;
-import com.filenet.api.meta.PropertyDescription;
 import com.filenet.api.property.FilterElement;
 import com.filenet.api.property.Properties;
 import com.filenet.api.property.Property;
@@ -65,17 +81,21 @@ public class FileNetService {
         }
     }
 
-    public ClassPropertiesDTO getClassPropertiesById(String classId, String token) throws ServiceException {
+    public ClassPropertiesDTO getClassPropertiesById(String symbolicName, String token) throws ServiceException {
         try (FileNetConnection fnUtil = new FileNetConnection()) {
             ClassPropertiesDTO results = new ClassPropertiesDTO();
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             ObjectStore os = fnUtil.connect(user.getUserNameLdap(), user.getPassword());
             PropertyFilter pf = new PropertyFilter();
             pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
-            ClassDescription classDesc = Factory.ClassDescription.fetchInstance(os, classId, pf);
-            results.setClassName(classDesc.get_SymbolicName());
-            PropertyDescriptionList propsDescList = classDesc.get_PropertyDescriptions();
-            results.setProperties(getClassPropertiesList(propsDescList));
+            results.setClassName(symbolicName);
+         // Fetch selected class definition from the server
+            ClassDefinition objClassDef = Factory.ClassDefinition.fetchInstance(os, symbolicName, pf);
+         // Get PropertyDefinitions property from the property cache
+         	PropertyDefinitionList objPropDefs = objClassDef.get_PropertyDefinitions();
+            
+            results.setProperties(getClassPropertiesList( objPropDefs));
+            
             return results;
         } catch (Exception e) {
             throw new ServiceException("Failed to get all classifications", e);
@@ -107,11 +127,11 @@ public class FileNetService {
             Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
             Properties docProps = document.getProperties();
             for (PropertyDTO propDto : dto.getProperties()) {
-                String className = getPropertyDtoClassName(propDto);
-                if (className == null) {
+                String propertyDataType = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(),  propDto);
+                if (propertyDataType == null) {
                     throw new ServiceException("DataType " + propDto.getDataType() + " is not supported");
                 }
-                setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
+                setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), propertyDataType);
             }
 //            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
             document.set_ContentElements(getContentElements(files));
@@ -130,7 +150,7 @@ public class FileNetService {
             Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
             Properties docProps = document.getProperties();
             for (PropertyDTO propDto : dto.getProperties()) {
-                String className = getPropertyDtoClassName(propDto);
+                String className = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(), propDto);
                 if (className == null) {
                     throw new ServiceException("DataType " + propDto.getDataType() + " is not supported");
                 }
@@ -210,53 +230,56 @@ public class FileNetService {
     }
 
     private void setPropertyValue(Properties props, String name, String value, String className) throws Exception {
-        List<String> values = Arrays.asList(value.replace("[", "").replace("]", "").split(","));
-        switch (className) {
-            case "PropertyBooleanImpl":
-                props.putValue(name, Boolean.parseBoolean(value));
-                break;
-            case "PropertyStringImpl":
-                props.putValue(name, value);
-                break;
-            case "PropertyInteger32Impl":
-                props.putValue(name, Integer.parseInt(value));
-                break;
-            case "PropertyFloat64Impl":
-                props.putValue(name, Double.parseDouble(value));
-                break;
-            case "PropertyDateTimeImpl":
-                props.putValue(name, new SimpleDateFormat("yyyy-MM-dd").parse((String) value));
-                break;
-            case "PropertyBooleanListImpl":
-                BooleanList booleanList = Factory.BooleanList.createList();
-                booleanList.addAll(values.stream().map(Boolean::parseBoolean).collect(Collectors.toList()));
-                props.putValue(name, booleanList);
-                break;
-            case "PropertyInteger32ListImpl":
-                Integer32List intList = Factory.Integer32List.createList();
-                intList.addAll(values.stream().map(Integer::parseInt).collect(Collectors.toList()));
-                props.putValue(name, intList);
-                break;
-            case "PropertyStringListImpl":
-                StringList strList = Factory.StringList.createList();
-                strList.addAll(values);
-                props.putValue(name, strList);
-                break;
-            case "PropertyFloat64ListImpl":
-                Float64List floatList = Factory.Float64List.createList();
-                floatList.addAll(values.stream().map(Double::parseDouble).collect(Collectors.toList()));
-                props.putValue(name, floatList);
-                break;
-            case "PropertyDateTimeListImpl":
-                DateTimeList dateList = Factory.DateTimeList.createList();
-                for (String strDate : values) {
-                    dateList.add(new SimpleDateFormat("yyyy-MM-dd").parse(strDate));
-                }
-                props.putValue(name, dateList);
-                break;
-            default:
-                throw new ServiceException("Failed to set property " + name + " with value " + value + ". Property datatype " + className + " is not supported");
-        }
+    	if(value != null  && !value.equalsIgnoreCase("")) {
+            List<String> values = Arrays.asList(value.replace("[", "").replace("]", "").split(","));
+            switch (className) {
+                case "PropertyBooleanImpl":
+                    props.putValue(name, Boolean.parseBoolean(value));
+                    break;
+                case "PropertyStringImpl":
+                    props.putValue(name, value);
+                    break;
+                case "PropertyInteger32Impl":
+                    props.putValue(name, Integer.parseInt(value));
+                    break;
+                case "PropertyFloat64Impl":
+                    props.putValue(name, Double.parseDouble(value));
+                    break;
+                case "PropertyDateTimeImpl":
+                    props.putValue(name, new SimpleDateFormat("yyyy-MM-dd").parse((String) value));
+                    break;
+                case "PropertyBooleanListImpl":
+                    BooleanList booleanList = Factory.BooleanList.createList();
+                    booleanList.addAll(values.stream().map(Boolean::parseBoolean).collect(Collectors.toList()));
+                    props.putValue(name, booleanList);
+                    break;
+                case "PropertyInteger32ListImpl":
+                    Integer32List intList = Factory.Integer32List.createList();
+                    intList.addAll(values.stream().map(Integer::parseInt).collect(Collectors.toList()));
+                    props.putValue(name, intList);
+                    break;
+                case "PropertyStringListImpl":
+                    StringList strList = Factory.StringList.createList();
+                    strList.addAll(values);
+                    props.putValue(name, strList);
+                    break;
+                case "PropertyFloat64ListImpl":
+                    Float64List floatList = Factory.Float64List.createList();
+                    floatList.addAll(values.stream().map(Double::parseDouble).collect(Collectors.toList()));
+                    props.putValue(name, floatList);
+                    break;
+                case "PropertyDateTimeListImpl":
+                    DateTimeList dateList = Factory.DateTimeList.createList();
+                    for (String strDate : values) {
+                        dateList.add(new SimpleDateFormat("yyyy-MM-dd").parse(strDate));
+                    }
+                    props.putValue(name, dateList);
+                    break;
+                default:
+                    throw new ServiceException("Failed to set property " + name + " with value " + value + ". Property datatype " + className + " is not supported");
+            }
+    	}
+
     }
 
     private String getPropertyValue(Property prop) throws ServiceException {
@@ -421,37 +444,49 @@ public class FileNetService {
         return contentElementList;
     }
 
-    private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDescriptionList propsDescList) throws ServiceException {
+    private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDefinitionList objPropDefs) throws ServiceException {
         try {
             List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
-            Iterator iter = propsDescList.iterator();
+            Iterator iter = objPropDefs.iterator();
+        	PropertyDefinition objPropDef = null;
             while (iter.hasNext()) {
-                PropertyDescription propDesc = (PropertyDescription) iter.next();
-                if (propDesc.get_IsSystemOwned() || !propDesc.get_IsSearchable()) {
-                    continue;
-                }
+            	objPropDef = (PropertyDefinition) iter.next();
+            	String symbolicName = objPropDef.get_SymbolicName();
 
-                String symbolicName = propDesc.get_SymbolicName();
-                if (classExcludedPropertiesList.contains(symbolicName)) {
-                    continue;
-                }
-
-                GetClassPropertyDTO prop = new GetClassPropertyDTO();
-                prop.setSymbolicName(symbolicName);
-                prop.setDataType(propDesc.get_DataType().toString());
-                prop.setRequired(propDesc.get_IsValueRequired());
-                if (propDesc.get_ChoiceList() != null) {
-                    prop.setChoicListName(propDesc.get_ChoiceList().get_DisplayName());
-                    ChoiceList cl = propDesc.get_ChoiceList();
-                    Iterator itrs = cl.get_ChoiceValues().iterator();
-                    List<String> values = new ArrayList<String>();
-                    while (itrs.hasNext()) {
-                        Choice c = (Choice) itrs.next();
-                        values.add(c.get_Name());
-                    }
-                    prop.setChoicListValues(values);
-                }
+                if (!objPropDef.get_IsSystemOwned() && !objPropDef.get_IsHidden() & !classExcludedPropertiesList.contains(symbolicName)) {
+	                GetClassPropertyDTO prop = new GetClassPropertyDTO();
+	                prop.setSymbolicName(symbolicName);
+	                prop.setDataType(objPropDef.get_DataType().toString());
+	                prop.setRequired(objPropDef.get_IsValueRequired());
+	                prop.setDesc(objPropDef.get_DisplayName()); 
+	                PropertyTemplate propTemp = objPropDef.get_PropertyTemplate();
+					LocalizedStringList localizedStringList = propTemp.get_DisplayNames();
+					LocalizedString localizedString;
+					for (int i = 0; i < localizedStringList.size(); i++) {
+						localizedString = (LocalizedString) localizedStringList.get(i);
+						if(localizedString != null && !localizedString.equals("")) {
+							if(localizedString.get_LocaleName().contains("ar".toLowerCase())){						
+								prop.setDescAr(localizedString.get_LocalizedText());
+							}
+							if(localizedString.get_LocaleName().contains("en".toLowerCase())){						
+								prop.setDescEn(localizedString.get_LocalizedText());
+							}
+						}
+					}
+				
+//                if (objPropDef.get_ChoiceList() != null) {
+//                    prop.setChoicListName(objPropDef.get_ChoiceList().get_DisplayName());
+//                    ChoiceList cl = objPropDef.get_ChoiceList();
+//                    Iterator itrs = cl.get_ChoiceValues().iterator();
+//                    List<String> values = new ArrayList<String>();
+//                    while (itrs.hasNext()) {
+//                        Choice c = (Choice) itrs.next();
+//                        values.add(c.get_Name());
+//                    }
+//                    prop.setChoicListValues(values);
+//                }
                 propsList.add(prop);
+                }
             }
             return propsList;
         } catch (Exception e) {
@@ -517,35 +552,69 @@ public class FileNetService {
     }
 
 
-    private String getPropertyDtoClassName(PropertyDTO propDto) throws Exception {
-        if (propDto.getPropertyValue().startsWith("[")) {
-            switch (propDto.getDataType().toUpperCase()) {
-                case "BOOLEAN":
-                    return "PropertyBooleanListImpl";
-                case "STRING":
-                    return "PropertyStringListImpl";
-                case "DATE":
-                    return "PropertyDateTimeListImpl";
-                case "LONG":
-                    return "PropertyInteger32ListImpl";
-                case "DOUBLE":
-                    return "PropertyFloat64ListImpl";
-            }
-        } else {
-            switch (propDto.getDataType().toUpperCase()) {
-                case "BOOLEAN":
-                    return "PropertyBooleanImpl";
-                case "STRING":
-                    return "PropertyStringImpl";
-                case "DATE":
-                    return "PropertyDateTimeImpl";
-                case "LONG":
-                    return "PropertyInteger32Impl";
-                case "DOUBLE":
-                    return "PropertyFloat64Impl";
-            }
-        }
+    private String getPropertyDtoDataType(ObjectStore objectStore, String documentClassName,  PropertyDTO propDto) throws Exception {  
+    	PropertyDefinition  propertyDefinition = fetchPropertyDefinitionByName(objectStore , documentClassName,  propDto.getSymbolicName());
+    	if(propertyDefinition !=null && propDto.getPropertyValue() != null  && !propDto.getPropertyValue().equalsIgnoreCase("")) {
+    	       if (propDto.getPropertyValue().startsWith("[")) {
+    	            switch (propertyDefinition.get_DataType().toString().toUpperCase()) {
+    	                case "BOOLEAN":
+    	                    return "PropertyBooleanListImpl";
+    	                case "STRING":
+    	                    return "PropertyStringListImpl";
+    	                case "DATE":
+    	                    return "PropertyDateTimeListImpl";
+    	                case "LONG":
+    	                    return "PropertyInteger32ListImpl";
+    	                case "DOUBLE":
+    	                    return "PropertyFloat64ListImpl";
+    	                case "FLOAT64":
+    	                    return "PropertyFloat64ListImpl";
+    	            }
+    	        } else {
+    	            switch (propertyDefinition.get_DataType().toString().toUpperCase()) {
+    	                case "BOOLEAN":
+    	                    return "PropertyBooleanImpl";
+    	                case "STRING":
+    	                    return "PropertyStringImpl";
+    	                case "DATE":
+    	                    return "PropertyDateTimeImpl";
+    	                case "LONG":
+    	                    return "PropertyInteger32Impl";
+    	                case "DOUBLE":
+    	                    return "PropertyFloat64Impl";
+    	                case "FLOAT64":
+    	                    return "PropertyFloat64Impl";
+    	            }
+    	        }
+    	}
+ 
 
         return null;
     }
+    
+
+
+
+
+        // Helper method to fetch a property definition by name under a Document Class
+        private  PropertyDefinition fetchPropertyDefinitionByName(ObjectStore objectStore,  String  documentClassName, String propertyName)  throws Exception{
+        	 PropertyFilter pf = new PropertyFilter();
+             pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
+          // Fetch selected class definition from the server
+             ClassDefinition objClassDef = Factory.ClassDefinition.fetchInstance(objectStore, documentClassName, pf);
+          // Get PropertyDefinitions property from the property cache
+          	PropertyDefinitionList objPropDefs = objClassDef.get_PropertyDefinitions();
+            Iterator iter = objPropDefs.iterator();
+        	PropertyDefinition objPropDef = null;
+            while (iter.hasNext()) {
+            	objPropDef = (PropertyDefinition) iter.next();
+            	String symbolicName = objPropDef.get_SymbolicName();
+
+                if (!objPropDef.get_IsSystemOwned() && !objPropDef.get_IsHidden() & !classExcludedPropertiesList.contains(symbolicName) 
+                		&& objPropDef.get_SymbolicName().equals(propertyName) ) {
+                	return objPropDef;
+                }
+            }
+            return null;
+        }
 }
