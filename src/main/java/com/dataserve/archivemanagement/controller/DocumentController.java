@@ -20,16 +20,14 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/physicalArchive")
 public class DocumentController {
-
     @Autowired
     private DocumentService documentService;
-
 
     @PostMapping(value = "/createDocument", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> createDocument(@RequestHeader(name = "Authorization") String token, @RequestPart(value = "document") String document, @RequestPart("files") List<MultipartFile> files) {
         return new ResponseEntity<>(documentService.createDocument(token, document, files), HttpStatus.OK);
-
-    } @PostMapping(value = "/createDocumentBase64", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    }
+    @PostMapping(value = "/createDocumentBase64", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> createDocumentBase64(@RequestHeader(name = "Authorization") String token, @RequestBody CreateDocumentDTO document) {
         return new ResponseEntity<>(documentService.createDocumentBase64(token, document), HttpStatus.OK);
 
@@ -39,6 +37,10 @@ public class DocumentController {
     public ResponseEntity<String> updateDocument(@RequestHeader(name = "Authorization") String token, @RequestPart(value = "document") @Valid UpdateDocumentDTO document, @RequestPart("files") List<MultipartFile> files) {
         return new ResponseEntity<>(documentService.updateDocument(token, document, files), HttpStatus.OK);
     }
-
+    @GetMapping(value = "/search")
+    public ResponseEntity<?> searchOnDocument(@RequestHeader(name = "Authorization") String token, @RequestParam String documentName,
+                                            @RequestParam String searchValue, @RequestParam(required = false) String contentSearch) {
+        return new ResponseEntity<>(documentService.searchInPropertiesAndContent(token, documentName, searchValue,contentSearch), HttpStatus.OK);
+    }
 
 }

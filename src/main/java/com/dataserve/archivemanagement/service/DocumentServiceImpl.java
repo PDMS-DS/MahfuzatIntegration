@@ -4,18 +4,22 @@ import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
 import com.dataserve.archivemanagement.model.*;
-import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
-import com.dataserve.archivemanagement.model.dto.PropertyDTO;
-import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
-import com.dataserve.archivemanagement.model.dto.UserDTO;
+import com.dataserve.archivemanagement.model.dto.*;
 import com.dataserve.archivemanagement.repository.*;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
 import com.dataserve.archivemanagement.util.AuditUtil;
+import com.dataserve.archivemanagement.util.FileNetConnection;
 import com.dataserve.archivemanagement.util.LogUtil;
 import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.filenet.api.core.Document;
 
+import java.util.Iterator;
+
+import com.filenet.api.collection.DocumentSet;
+import com.filenet.api.query.SearchScope;
+import com.filenet.api.query.SearchSQL;
+import com.filenet.api.core.ObjectStore;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +32,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -52,6 +54,8 @@ public class DocumentServiceImpl implements DocumentService {
     private UsersRepo usersRepo;
     @Autowired
     private FolderRepo folderRepo;
+    @Autowired
+    private ClassificationsService classificationsService;
 
     @Override
     public String createDocument(String token, String document, List<MultipartFile> files) {
@@ -118,28 +122,28 @@ public class DocumentServiceImpl implements DocumentService {
     public String createDocumentBase64(String token, CreateDocumentDTO document) {
         try {
             if (validationBeforeSaveDocument(document)) {
-            Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
-            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-            Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
+                Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo())).orElseThrow(() -> new DataNotFoundException("Folder Not Found With serial No: " + document.getFolderNo()));
+                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+                Document newDocument = fnService.createDocument(loginUser.getUserNameLdap(), loginUser.getPassword(), document);
 
-            String result = newDocument.get_Id().toString();
+                String result = newDocument.get_Id().toString();
 
-            LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
-            JSONObject params = new JSONObject(document);
-            AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-            audit.run();
-            // save Document info on DB
+                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created throw integration");
+                JSONObject params = new JSONObject(document);
+                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+                audit.run();
+                // save Document info on DB
 
-            String documentId = result.substring(1, result.length() - 1);
+                String documentId = result.substring(1, result.length() - 1);
 
-            AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
+                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-            DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
-            if (dmsFiles != null) {
-                DMSAudit dmsAudit = addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-                saveDMSPropertyAudit(document.getProperties(), dmsAudit.getAuditId());
-            }
-            return documentId;
+                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
+                if (dmsFiles != null) {
+                    DMSAudit dmsAudit = addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+                    saveDMSPropertyAudit(document.getProperties(), dmsAudit.getAuditId());
+                }
+                return documentId;
             }
 
         } catch (DataRequiredException e) {
@@ -188,8 +192,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     public Boolean saveDMSPropertyAudit(List<PropertyDTO> properties, Long dmsAuditId) {
         if (properties != null && properties.size() > 0) {
-            List<DMSPropertiesAudit> dmsPropertiesAudits = properties.stream().map(propertyDTO -> new DMSPropertiesAudit(
-                    propertyDTO.getSymbolicName(), propertyDTO.getPropertyValue(), new DMSAudit(dmsAuditId))).collect(Collectors.toList());
+            List<DMSPropertiesAudit> dmsPropertiesAudits = properties.stream().map(propertyDTO -> new DMSPropertiesAudit(propertyDTO.getSymbolicName(), propertyDTO.getPropertyValue(), new DMSAudit(dmsAuditId))).collect(Collectors.toList());
             dmsPropertyAuditRepository.saveAll(dmsPropertiesAudits);
         }
         return true;
@@ -343,6 +346,88 @@ public class DocumentServiceImpl implements DocumentService {
         } else {
             return "application/octet-stream";
         }
+    }
+
+
+    public List<String> searchInPropertiesAndContent(String token, String documentName, String propertyName, String searchContent) {
+        try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
+            List<String> list = new ArrayList<>();
+            UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
+            List<GetClassPropertyDTO> classProperties = getClassProperties(documentName, token);
+            String query = null;
+            if (searchContent == null)
+                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
+            else {
+                query = buildContentQueryAndWhereCondition(classProperties, documentName, propertyName, searchContent);
+            }
+            SearchSQL sql = new SearchSQL();
+            sql.setQueryString(query);
+            SearchScope searchScope = new SearchScope(os);
+            DocumentSet documents = (DocumentSet) searchScope.fetchObjects(sql, Integer.valueOf(50), null, Boolean.valueOf(true));
+            Iterator iterator = documents.iterator();
+            while (iterator.hasNext()) {
+                Document doc = (Document) iterator.next();
+                System.out.println(doc.get_Id());
+                String documentId = doc.get_Id().toString();
+                list.add(documentId.substring(1, documentId.length() - 1));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    private String buildFiledQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int index = 0;
+        for (GetClassPropertyDTO propertyDTO : classProperties) {
+            if (propertyDTO.getDataType().equals("STRING")) {
+                if (index > 0) stringBuilder.append(" OR ");
+                stringBuilder.append("[");
+                stringBuilder.append(propertyDTO.getSymbolicName());
+                stringBuilder.append("]");
+                stringBuilder.append(" like ");
+                stringBuilder.append("'%");
+                stringBuilder.append(searchValue);
+                stringBuilder.append("%'");
+            }
+            index++;
+        }
+        return "SELECT [Id] FROM [" + documentName + "] WHERE " + stringBuilder;
+    }
+
+    private String buildContentQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue, String searchContent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int index = 0;
+        for (GetClassPropertyDTO propertyDTO : classProperties) {
+            if (propertyDTO.getDataType().equals("STRING")) {
+                if (index > 0) stringBuilder.append(" OR ");
+                stringBuilder.append("[");
+                stringBuilder.append(propertyDTO.getSymbolicName());
+                stringBuilder.append("]");
+                stringBuilder.append(" like ");
+                stringBuilder.append("'%");
+                stringBuilder.append(searchValue);
+                stringBuilder.append("%'");
+            }
+            index++;
+        }
+        return "SELECT Id FROM " + documentName + " T LEFT JOIN ContentSearch cs ON T.This = cs.QueriedObject " + "WHERE CONTAINS(*," + "'" + searchContent + "'" + ")" + " OR " + stringBuilder;
+    }
+
+    public List<GetClassPropertyDTO> getClassProperties(String documentName, String token) {
+
+        ClassPropertiesDTO classProperties = classificationsService.findClassProperties(documentName, token);
+        if (classProperties != null) {
+            List<GetClassPropertyDTO> properties = classProperties.getProperties();
+            if (properties != null && !properties.isEmpty()) {
+                return properties;
+            }
+        } else {
+            throw new ServiceException(" Class is not has Properties");
+        }
+        return null;
     }
 
 

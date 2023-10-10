@@ -13,4 +13,6 @@ public interface DocumentService {
     public String updateDocument(String token, UpdateDocumentDTO document, List<MultipartFile> files);
 
     String createDocumentBase64(String token, CreateDocumentDTO document);
+
+    List<String> searchInPropertiesAndContent(String token, String documentName, String searchValue,String searchContent);
 }
