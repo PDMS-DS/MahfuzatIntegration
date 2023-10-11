@@ -14,7 +14,7 @@ import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.filenet.api.core.Document;
 
-import java.util.Iterator;
+import java.util.*;
 
 import com.filenet.api.collection.DocumentSet;
 import com.filenet.api.query.SearchScope;
@@ -30,9 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +52,10 @@ public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private FolderRepo folderRepo;
     @Autowired
+    private DepartmentsRepo departmentsRepo;
+    @Autowired
     private ClassificationsService classificationsService;
+
 
     @Override
     public String createDocument(String token, String document, List<MultipartFile> files) {
@@ -349,35 +349,68 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-    public List<String> searchInPropertiesAndContent(String token, String documentName, String propertyName, String searchContent) {
+    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentName, String searchValue) {
         try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
-            List<String> list = new ArrayList<>();
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
             List<GetClassPropertyDTO> classProperties = getClassProperties(documentName, token);
             String query = null;
-            if (searchContent == null)
-                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
-            else {
-                query = buildContentQueryAndWhereCondition(classProperties, documentName, propertyName, searchContent);
-            }
+//            if (searchContent == null)
+//                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
+//            else {
+            query = buildContentQueryAndWhereCondition(classProperties, documentName, searchValue);
+//            }
             SearchSQL sql = new SearchSQL();
             sql.setQueryString(query);
             SearchScope searchScope = new SearchScope(os);
             DocumentSet documents = (DocumentSet) searchScope.fetchObjects(sql, Integer.valueOf(50), null, Boolean.valueOf(true));
-            Iterator iterator = documents.iterator();
-            while (iterator.hasNext()) {
-                Document doc = (Document) iterator.next();
-                System.out.println(doc.get_Id());
-                String documentId = doc.get_Id().toString();
-                list.add(documentId.substring(1, documentId.length() - 1));
-            }
-            return list;
+            return getSearchDocumentResult(documents.iterator());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
+    public List<SearchDocumentDTO> getSearchDocumentResult(Iterator iterator) {
+        List<SearchDocumentDTO> searchDocumentDTOS = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Document doc = (Document) iterator.next();
+            System.out.println(doc.get_Id());
+            String documentId = doc.get_Id().toString();
+            String docId = documentId.substring(1, documentId.length() - 1);
+            SearchDocumentDTO searchDocumentDTO = findDocumentDataById(docId);
+            if (searchDocumentDTO != null)
+                searchDocumentDTOS.add(searchDocumentDTO);
+        }
+        return searchDocumentDTOS;
+    }
+
+    private SearchDocumentDTO findDocumentDataById(String docId) {
+        DmsFiles dmsFiles = dmsFilesRepository.findByDocumentId(docId);
+        SearchDocumentDTO searchDocument = null;
+        AppUsers user = null;
+        if (dmsFiles != null) {
+            searchDocument = new SearchDocumentDTO();
+            user = usersRepo.findById(dmsFiles.getUserId()).orElseThrow(() -> new DataNotFoundException("User Not Found"));
+            searchDocument.setUsernameEn(user.getUserEnName());
+            searchDocument.setUsernameAr(user.getUserArName());
+            searchDocument.setDocId(dmsFiles.getDocumentId());
+            searchDocument.setNoPages(dmsFiles.getNoPages());
+            Departments department = dmsFiles.getDepartments();
+            if (department != null) {
+                searchDocument.setDocumentNameAr(department.getDeptArName());
+                searchDocument.setDocumentNameEn(department.getDeptEnName());
+            }
+            Optional<Folder> folder = folderRepo.findById(dmsFiles.getFileId());
+            if (folder.isPresent()) {
+                searchDocument.setDocumentNameEn(folder.get().getNameEn());
+                searchDocument.setDocumentNameAr(folder.get().getNameAr());
+            }
+            return searchDocument;
+        }
+        return null;
+    }
+
     private String buildFiledQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue) {
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
@@ -397,7 +430,7 @@ public class DocumentServiceImpl implements DocumentService {
         return "SELECT [Id] FROM [" + documentName + "] WHERE " + stringBuilder;
     }
 
-    private String buildContentQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue, String searchContent) {
+    private String buildContentQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue) {
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
         for (GetClassPropertyDTO propertyDTO : classProperties) {
@@ -413,7 +446,7 @@ public class DocumentServiceImpl implements DocumentService {
             }
             index++;
         }
-        return "SELECT Id FROM " + documentName + " T LEFT JOIN ContentSearch cs ON T.This = cs.QueriedObject " + "WHERE CONTAINS(*," + "'" + searchContent + "'" + ")" + " OR " + stringBuilder;
+        return "SELECT Id FROM " + documentName + " T LEFT JOIN ContentSearch cs ON T.This = cs.QueriedObject " + "WHERE CONTAINS(*," + "'" + searchValue + "'" + ")" + " OR " + stringBuilder;
     }
 
     public List<GetClassPropertyDTO> getClassProperties(String documentName, String token) {

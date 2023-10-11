@@ -1,7 +1,10 @@
 package com.dataserve.archivemanagement.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.Date;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FolderDto {
     private Long folderId;
     private String nameAr;

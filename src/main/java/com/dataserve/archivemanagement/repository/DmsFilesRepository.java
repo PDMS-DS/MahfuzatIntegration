@@ -10,5 +10,7 @@ public interface DmsFilesRepository extends JpaRepository<DmsFiles, Long> {
 
     Long countByFolderNo(Long folderId);
 
+    DmsFiles findByDocumentId(String documentId);
+
 
 }
