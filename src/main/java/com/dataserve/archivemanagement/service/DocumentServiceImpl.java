@@ -349,16 +349,16 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentName, String searchValue) {
+    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue) {
         try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
-            List<GetClassPropertyDTO> classProperties = getClassProperties(documentName, token);
+            List<GetClassPropertyDTO> classProperties = getClassProperties(documentClass, token);
             String query = null;
 //            if (searchContent == null)
 //                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
 //            else {
-            query = buildContentQueryAndWhereCondition(classProperties, documentName, searchValue);
+            query = buildContentQueryAndWhereCondition(classProperties, documentClass, searchValue);
 //            }
             SearchSQL sql = new SearchSQL();
             sql.setQueryString(query);
@@ -396,15 +396,16 @@ public class DocumentServiceImpl implements DocumentService {
             searchDocument.setUsernameAr(user.getUserArName());
             searchDocument.setDocId(dmsFiles.getDocumentId());
             searchDocument.setNoPages(dmsFiles.getNoPages());
+            searchDocument.setDocumentTitle(dmsFiles.getDocumentName());
             Departments department = dmsFiles.getDepartments();
             if (department != null) {
-                searchDocument.setDocumentNameAr(department.getDeptArName());
-                searchDocument.setDocumentNameEn(department.getDeptEnName());
+                searchDocument.setDepartmentNameAr(department.getDeptArName());
+                searchDocument.setDepartmentNameEn(department.getDeptEnName());
             }
             Optional<Folder> folder = folderRepo.findById(dmsFiles.getFileId());
             if (folder.isPresent()) {
-                searchDocument.setDocumentNameEn(folder.get().getNameEn());
-                searchDocument.setDocumentNameAr(folder.get().getNameAr());
+                searchDocument.setFolderNameEn(folder.get().getNameEn());
+                searchDocument.setFolderNameAr(folder.get().getNameAr());
             }
             return searchDocument;
         }
@@ -430,7 +431,7 @@ public class DocumentServiceImpl implements DocumentService {
         return "SELECT [Id] FROM [" + documentName + "] WHERE " + stringBuilder;
     }
 
-    private String buildContentQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentName, String searchValue) {
+    private String buildContentQueryAndWhereCondition(List<GetClassPropertyDTO> classProperties, String documentClass, String searchValue) {
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
         for (GetClassPropertyDTO propertyDTO : classProperties) {
@@ -446,7 +447,7 @@ public class DocumentServiceImpl implements DocumentService {
             }
             index++;
         }
-        return "SELECT Id FROM " + documentName + " T LEFT JOIN ContentSearch cs ON T.This = cs.QueriedObject " + "WHERE CONTAINS(*," + "'" + searchValue + "'" + ")" + " OR " + stringBuilder;
+        return "SELECT Id FROM " + documentClass + " T LEFT JOIN ContentSearch cs ON T.This = cs.QueriedObject " + "WHERE CONTAINS(*," + "'" + searchValue + "'" + ")" + " OR " + stringBuilder;
     }
 
     public List<GetClassPropertyDTO> getClassProperties(String documentName, String token) {

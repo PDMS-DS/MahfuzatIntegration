@@ -15,9 +15,9 @@ public class SearchDocumentDTO {
     private String usernameAr;
     private String usernameEn;
     private String docId;
-    private String documentNameAr;
-    private String documentNameEn;
-    private String departmentName;
+    private String departmentNameAr;
+    private String departmentNameEn;
+    private String documentTitle;
     private String folderNameAr;
     private String folderNameEn;
     private Long noPages;
