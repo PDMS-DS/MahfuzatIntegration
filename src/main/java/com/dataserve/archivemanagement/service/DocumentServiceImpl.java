@@ -12,11 +12,19 @@ import com.dataserve.archivemanagement.util.FileNetConnection;
 import com.dataserve.archivemanagement.util.LogUtil;
 import com.dataserve.archivemanagement.util.SaveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.filenet.api.collection.ContentElementList;
+import com.filenet.api.constants.PropertyNames;
+import com.filenet.api.core.ContentTransfer;
 import com.filenet.api.core.Document;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.*;
 
 import com.filenet.api.collection.DocumentSet;
+import com.filenet.api.core.Factory;
+import com.filenet.api.property.FilterElement;
+import com.filenet.api.property.PropertyFilter;
 import com.filenet.api.query.SearchScope;
 import com.filenet.api.query.SearchSQL;
 import com.filenet.api.core.ObjectStore;
@@ -464,5 +472,55 @@ public class DocumentServiceImpl implements DocumentService {
         return null;
     }
 
+
+    public FileContentDto getFileContent(String token, String docId) {
+        StringBuilder stringBuilder1 = new StringBuilder();
+        try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
+            UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("{");
+            stringBuilder.append(docId);
+            stringBuilder.append("}");
+
+            FileContentDto fileContentDto = new FileContentDto();
+            PropertyFilter pf = new PropertyFilter();
+            pf.addIncludeProperty(new FilterElement(null, null, null, PropertyNames.CONTENT_SIZE, null));
+            pf.addIncludeProperty(new FilterElement(null, null, null, PropertyNames.CONTENT_ELEMENTS, null));
+            Document doc = Factory.Document.fetchInstance(os, stringBuilder.toString(), pf);
+            String base64 = "";
+            // Get content elements and iterate list.
+            ContentElementList docContentList = doc.get_ContentElements();
+            Iterator iter = docContentList.iterator();
+            while (iter.hasNext()) {
+                ContentTransfer ct = (ContentTransfer) iter.next();
+
+                fileContentDto.setContentType(ct.get_ContentType());
+                fileContentDto.setFileName(ct.get_RetrievalName());
+                fileContentDto.setContentSize(ct.get_ContentSize());
+
+                // Get and print the content of the element.
+                InputStream stream = ct.accessContentStream();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] buf = new byte[(int) Math.round(ct.get_ContentSize())];
+                int n = 0;
+                while (-1 != (n = stream.read(buf))) {
+                    out.write(buf, 0, n);
+                }
+                out.close();
+                stream.close();
+                byte[] response = out.toByteArray();
+                stream.close();
+                base64 = Base64.getEncoder().encodeToString(response);
+                fileContentDto.setBase64(base64);
+                return fileContentDto;
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

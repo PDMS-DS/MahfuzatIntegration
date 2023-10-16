@@ -39,8 +39,13 @@ public class DocumentController {
     }
     @GetMapping(value = "/search")
     public ResponseEntity<?> searchOnDocument(@RequestHeader(name = "Authorization") String token, @RequestParam String documentClass,
-                                            @RequestParam String searchValue) {
-        return new ResponseEntity<>(documentService.searchInPropertiesAndContent (token, documentClass, searchValue), HttpStatus.OK);
+                                              @RequestParam String searchValue) {
+        return new ResponseEntity<>(documentService.searchInPropertiesAndContent(token, documentClass, searchValue), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/fileContent/{docId}")
+    public ResponseEntity<?> getFileContent(@RequestHeader(name = "Authorization") String token, @PathVariable("docId") String docId) {
+        return new ResponseEntity<>(documentService.getFileContent(token,docId), HttpStatus.OK);
     }
 
 }
