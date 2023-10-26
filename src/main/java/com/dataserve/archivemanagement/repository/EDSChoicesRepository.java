@@ -9,6 +9,8 @@ import java.util.List;
 @Repository
 public interface EDSChoicesRepository extends JpaRepository<EDSChoices, String> {
 
-    List<EDSChoices> findByClassSymbolicName(String objectType);
+
+
+    List<EDSChoices> findByCompositeKeyClassSymbolicName(String symbolicName);
 
 }

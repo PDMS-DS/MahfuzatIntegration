@@ -3,7 +3,9 @@ package com.dataserve.archivemanagement.model.dto;
 public class EDSChoiceDTO {
 	private String lang;
 	private String displayName;
+
 	private String value;
+	private String dependValue;
 	
 	public String getLang() {
 		return lang;
@@ -23,4 +25,13 @@ public class EDSChoiceDTO {
 	public void setValue(String value) {
 		this.value = value;
 	}
+
+	public String getDependValue() {
+		return dependValue;
+	}
+
+	public void setDependValue(String dependValue) {
+		this.dependValue = dependValue;
+	}
+
 }

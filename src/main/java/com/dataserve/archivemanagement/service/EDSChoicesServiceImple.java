@@ -20,22 +20,26 @@ public class EDSChoicesServiceImple implements EDSChoicesService {
     private EDSChoicesRepository edsChoicesRepository;
 
     public Map<String, EDSChoiceListDTO> getClassEDSPropertesBySymbolicName(String classSymbolicName) {
-        List<EDSChoices> edsChoicesList = edsChoicesRepository.findByClassSymbolicName(classSymbolicName);
+        List<EDSChoices> edsChoicesList = edsChoicesRepository.findByCompositeKeyClassSymbolicName(classSymbolicName);
+        EDSChoiceListDTO listDto = null;
+        EDSChoiceDTO dto = null;
         Map<String, EDSChoiceListDTO> choiceLists = new HashMap<>();
         if (edsChoicesList != null && !edsChoicesList.isEmpty()) {
             for (EDSChoices edsChoices : edsChoicesList) {
-                String propertyName = edsChoices.getProperty();
+                String propertyName = edsChoices.getCompositeKey().getProperty();
                 if (!choiceLists.containsKey(propertyName)) {
-                    EDSChoiceListDTO listDto = new EDSChoiceListDTO();
-                    listDto.setPropertyName(edsChoices.getProperty());
+                    listDto = new EDSChoiceListDTO();
+                    listDto.setPropertyName(edsChoices.getCompositeKey().getProperty());
                     listDto.setChoiceListName(edsChoices.getListDisplayName());
+                    listDto.setDependOn(edsChoices.getDepon());
                     listDto.setChoiceList(new ArrayList());
                     choiceLists.put(propertyName, listDto);
                 }
-                EDSChoiceDTO dto = new EDSChoiceDTO();
+                dto = new EDSChoiceDTO();
                 dto.setDisplayName(edsChoices.getDisplayName());
-                dto.setLang(edsChoices.getLang());
-                dto.setValue(edsChoices.getValue());
+                dto.setLang(edsChoices.getCompositeKey().getLang());
+                dto.setDependValue(edsChoices.getDepValue());
+                dto.setValue(edsChoices.getCompositeKey().getValue());
                 choiceLists.get(propertyName).getChoiceList().add(dto);
             }
             return choiceLists;

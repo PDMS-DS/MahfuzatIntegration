@@ -88,6 +88,8 @@ public class ClassificationsServiceImpl implements ClassificationsService {
             for (GetClassPropertyDTO prop : fnProps.getProperties()) {
                 if (edsProps.containsKey(prop.getSymbolicName())) {
                     EDSChoiceListDTO listDto = edsProps.get(prop.getSymbolicName());
+                    if (listDto.getDependOn() != null)
+                        prop.setDependOn(listDto.getDependOn());
                     prop.setEdsChoiceListName(listDto.getChoiceListName());
                     prop.setEdsChoiceListValues(listDto.getChoiceList());
                 }

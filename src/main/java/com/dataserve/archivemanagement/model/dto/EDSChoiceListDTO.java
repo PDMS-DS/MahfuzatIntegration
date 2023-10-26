@@ -11,6 +11,7 @@ import java.util.List;
 public class EDSChoiceListDTO {
 	private String propertyName;
 	private String choiceListName;
+	private String dependOn;
 	private List<EDSChoiceDTO> choiceList;
 
 }
