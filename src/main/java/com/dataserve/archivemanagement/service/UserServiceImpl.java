@@ -96,12 +96,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     public Set<Map<String, Set<String>>> getPermissionGroupedByModulesDistinct(Set<Permissions> permissionsSet) {
         Map<String, List<Permissions>> stringListMap = permissionsSet.stream().collect(groupingBy(permissions -> permissions.getModule().getModuleNameEn()));
-        Set<String> finalPermissions = new HashSet<>();
+        Set<String> permissionList = null;
         Set<Map<String, Set<String>>> mapOfPermissions = new HashSet<>();
-
+        Map<String, Set<String>> map = null;
         for (Map.Entry<String, List<Permissions>> entry : stringListMap.entrySet()) {
-            Map<String, Set<String>> map = new HashMap<>();
+            map = new HashMap<>();
+            permissionList = new HashSet<>();
             List<Permissions> permissionsList = entry.getValue();
+            Set<String> finalPermissions = permissionList;
             permissionsList.forEach(permissions ->
                     finalPermissions.add(Arrays.stream(permissions.getPermissionEnName()
                             .toUpperCase().split(" ")).findFirst().get()));
