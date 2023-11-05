@@ -1,6 +1,7 @@
 package com.dataserve.archivemanagement.service;
 
 import com.dataserve.archivemanagement.model.Box;
+import com.dataserve.archivemanagement.model.dto.BoxDto;
 
 
 import java.util.List;
@@ -10,7 +11,7 @@ public interface BoxService {
 
      Box findById(Long theId);
     
-     Box findBySerial(Long serial);
+     BoxDto findBySerial(Long serial);
 
 
 

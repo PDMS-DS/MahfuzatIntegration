@@ -1,6 +1,7 @@
 package com.dataserve.archivemanagement.service;
 
 import com.dataserve.archivemanagement.model.Folder;
+import com.dataserve.archivemanagement.model.dto.FolderDto;
 
 import java.util.List;
 
@@ -10,6 +11,6 @@ public interface FolderService {
 
     Folder findById(Long theId);
 
-    Folder findBySerial(Long serial);
+    FolderDto findBySerial(Long serial);
 
 }
