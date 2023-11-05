@@ -3,6 +3,7 @@ package com.dataserve.archivemanagement.controller;
 
 import java.util.List;
 
+import com.dataserve.archivemanagement.model.dto.BoxDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,7 @@ public class BoxController {
     }
 
     @GetMapping("/box/serial/{serial}")
-    public ResponseEntity<Box> getBoxBySerial(@PathVariable(value = "serial") Long serial) {
+    public ResponseEntity<BoxDto> getBoxBySerial(@PathVariable(value = "serial") Long serial) {
         return ResponseEntity.ok(boxService.findBySerial(serial));
     }
 
