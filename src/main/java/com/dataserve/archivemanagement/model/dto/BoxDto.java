@@ -9,7 +9,6 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BoxDto {
     private Long boxId;
     private String nameAr;
@@ -19,12 +18,9 @@ public class BoxDto {
     private Date addedOn;
     private Date date;
     private String boxTypeNameAr;
-    private Long boxTypeId;
     private String boxTypeNameEn;
-    private Long shelfId;
     private String shelfAr;
     private String shelfEn;
-    private Long lineId;
     private String lineAr;
     private String lineEn;
     private String inventoryAr;

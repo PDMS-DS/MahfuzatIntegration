@@ -8,7 +8,6 @@ import lombok.Setter;
 
 import java.util.Date;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,16 +16,15 @@ public class FolderDto {
     private Long folderId;
     private String nameAr;
     private String nameEn;
-    private Long boxId;
+    private String boxNameEn;
+    private String boxNameAr;
     private Long capacity;
     private Date addedOn;
     private Long serial;
     private String boxTypeNameAr;
     private String boxTypeNameEn;
-    private Long shelfId;
     private String shelfAr;
     private String shelfEn;
-    private Long lineId;
     private String lineAr;
     private String lineEn;
     private String inventoryAr;

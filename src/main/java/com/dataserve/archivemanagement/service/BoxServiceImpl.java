@@ -47,15 +47,12 @@ public class BoxServiceImpl implements BoxService {
         if (boxType != null) {
             boxDto.setBoxTypeNameAr(boxType.getBoxTypeAr());
             boxDto.setBoxTypeNameEn(boxType.getBoxTypeEn());
-            boxDto.setBoxTypeId(boxType.getBoxTypeId());
         }
         if (shelf != null) {
-            boxDto.setShelfId(shelf.getShelfId());
             boxDto.setShelfEn(shelf.getNameEn());
             boxDto.setShelfAr(shelf.getNameAr());
             Line line = shelf.getLine();
             if (line != null) {
-                boxDto.setLineId(line.getLineId());
                 boxDto.setLineAr(line.getNameAr());
                 boxDto.setLineEn(line.getNameEn());
                 Inventory inventory = line.getInventory();

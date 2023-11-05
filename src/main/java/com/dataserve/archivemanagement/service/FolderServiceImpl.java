@@ -37,7 +37,8 @@ public class FolderServiceImpl implements FolderService {
         folderDto.setFolderId(folder.getFolderId());
         folderDto.setNameAr(folder.getNameAr());
         folderDto.setNameEn(folder.getNameEn());
-        folderDto.setBoxId(folder.getBoxId());
+        folderDto.setBoxNameAr(box.getNameAr());
+        folderDto.setBoxNameEn(box.getNameEn());
         folderDto.setCapacity(folder.getCapacity());
         folderDto.setAddedOn(folder.getAddedOn());
         folderDto.setSerial(folder.getSerial());
@@ -47,8 +48,6 @@ public class FolderServiceImpl implements FolderService {
         folderDto.setDepartmentNameEn(box.getDepartmentNameEn());
         folderDto.setLineAr(box.getLineAr());
         folderDto.setLineEn(box.getLineEn());
-        folderDto.setLineId(box.getLineId());
-        folderDto.setShelfId(box.getShelfId());
         folderDto.setShelfAr(box.getShelfAr());
         folderDto.setShelfEn(box.getShelfEn());
         folderDto.setInventoryAr(box.getInventoryAr());
