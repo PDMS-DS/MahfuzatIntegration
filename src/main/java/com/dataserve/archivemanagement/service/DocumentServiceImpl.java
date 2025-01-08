@@ -63,6 +63,8 @@ public class DocumentServiceImpl implements DocumentService {
     private DepartmentsRepo departmentsRepo;
     @Autowired
     private ClassificationsService classificationsService;
+    @Autowired
+    private EDSChoicesService edsChoicesService;
 
 
     @Override
@@ -522,5 +524,45 @@ public class DocumentServiceImpl implements DocumentService {
         }
         return null;
     }
+
+
+    public ClassPropertiesDTO findFileProperties(String docId, String token) {
+        UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+        DmsFiles dmsFile = dmsFilesRepository.findByDocumentId(docId);
+        if (dmsFile == null) {
+            throw new DataNotFoundException("docId not found");
+        }
+        Document document =fnService.getDocumentByDocId(loginUser.getUserNameLdap(), loginUser.getPassword(),docId);
+        if (document == null) {
+            throw new DataNotFoundException("document not found");
+        }
+        ClassPropertiesDTO fnProps = fnService.getDocumentPropertiesById(dmsFile.getDocumentClass(),document, token);
+        if (fnProps == null || fnProps.getProperties().isEmpty()) {
+            throw new DataNotFoundException("Class not found");
+        }
+        Map<String, EDSChoiceListDTO> edsProps = edsChoicesService.getClassEDSPropertesBySymbolicName(fnProps.getClassName());
+        if (edsProps.size() != 0) {
+            for (GetClassPropertyDTO prop : fnProps.getProperties()) {
+                if (edsProps.containsKey(prop.getSymbolicName())) {
+                    EDSChoiceListDTO listDto = edsProps.get(prop.getSymbolicName());
+                    if (listDto.getDependOn() != null)
+                        prop.setDependOn(listDto.getDependOn());
+
+                    // Check if value matches any value in the choiceList and set displayName
+                    if (listDto.getChoiceList() != null) {
+                        for (EDSChoiceDTO choice : listDto.getChoiceList()) {
+                            if (choice.getValue().equals(prop.getValue()) && choice.getLang().equals("ar")) {
+                                prop.setValue(choice.getDisplayName()); // Set the displayName as value
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return fnProps;
+
+    }
+
 
 }

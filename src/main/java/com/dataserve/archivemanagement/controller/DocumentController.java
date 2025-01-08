@@ -48,4 +48,9 @@ public class DocumentController {
         return new ResponseEntity<>(documentService.getFileContent(token,docId), HttpStatus.OK);
     }
 
+    @GetMapping(value = "/fileProperties/{docId}")
+    public ResponseEntity<?> getFileProperties(@RequestHeader(name = "Authorization") String token, @PathVariable("docId") String docId) {
+        return new ResponseEntity<>(documentService.findFileProperties(docId,token), HttpStatus.OK);
+    }
+
 }

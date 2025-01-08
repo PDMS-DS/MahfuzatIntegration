@@ -12,6 +12,7 @@ import java.util.List;
 public class GetClassPropertyDTO {
     private String symbolicName;
     private String dataType;
+    private String value;
     private boolean isRequired;
     private String choicListName;
     private List<String> choicListValues;

@@ -1,9 +1,6 @@
 package com.dataserve.archivemanagement.service;
 
-import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
-import com.dataserve.archivemanagement.model.dto.FileContentDto;
-import com.dataserve.archivemanagement.model.dto.SearchDocumentDTO;
-import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -18,4 +15,7 @@ public interface DocumentService {
 
     List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentName, String searchValue);
     FileContentDto getFileContent(String token, String docId);
+
+    ClassPropertiesDTO findFileProperties(String docId, String token);
+
 }

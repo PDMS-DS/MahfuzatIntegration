@@ -19,6 +19,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.filenet.apiimpl.property.PropertyDateTimeImpl;
+import com.filenet.apiimpl.property.PropertyFloat64Impl;
+import com.filenet.apiimpl.property.PropertyInteger32Impl;
+import com.filenet.apiimpl.property.PropertyStringImpl;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,6 +106,28 @@ public class FileNetService {
         }
     }
 
+
+    public ClassPropertiesDTO getDocumentPropertiesById(String symbolicName,Document document, String token) throws ServiceException {
+        try (FileNetConnection fnUtil = new FileNetConnection()) {
+            ClassPropertiesDTO results = new ClassPropertiesDTO();
+            UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            ObjectStore os = fnUtil.connect(user.getUserNameLdap(), user.getPassword());
+            PropertyFilter pf = new PropertyFilter();
+            pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
+            results.setClassName(symbolicName);
+            // Fetch selected class definition from the server
+            ClassDefinition objClassDef = Factory.ClassDefinition.fetchInstance(os, symbolicName, pf);
+            // Get PropertyDefinitions property from the property cache
+            PropertyDefinitionList objPropDefs = objClassDef.get_PropertyDefinitions();
+
+            results.setProperties(getDocumentPropertiesValuesList( objPropDefs,document));
+
+            return results;
+        } catch (Exception e) {
+            throw new ServiceException("Failed to get all classifications", e);
+        }
+    }
+
     public GetDocumentDTO getDocumentByGUID(String username, String password, String GUID) throws ServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             PropertyFilter pf = new PropertyFilter();
@@ -116,6 +142,18 @@ public class FileNetService {
             document.setContents(contents);
             document.setProperties(propsMap);
             return document;
+        } catch (Exception e) {
+            throw new ServiceException("Failed to get Document with ID '" + GUID + "'", e);
+        }
+    }
+
+    public Document getDocumentByDocId(String username, String password, String GUID) throws ServiceException {
+        try (FileNetConnection con = new FileNetConnection()) {
+            PropertyFilter pf = new PropertyFilter();
+            pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
+            pf.addIncludeProperty(new FilterElement(null, null, null, PropertyNames.CONTENT_ELEMENTS, null));
+            Document doc = Factory.Document.fetchInstance(con.connect(username, password), new Id(GUID), pf);
+            return doc;
         } catch (Exception e) {
             throw new ServiceException("Failed to get Document with ID '" + GUID + "'", e);
         }
@@ -493,6 +531,89 @@ public class FileNetService {
             throw new ServiceException("Failed to get Class Properties List", e);
         }
     }
+
+
+    private List<GetClassPropertyDTO> getDocumentPropertiesValuesList(PropertyDefinitionList objPropDefs,Document document) throws ServiceException {
+        try {
+            Properties props = document.getProperties();
+            List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
+            Iterator iter = objPropDefs.iterator();
+            PropertyDefinition objPropDef = null;
+            while (iter.hasNext()) {
+                objPropDef = (PropertyDefinition) iter.next();
+                String symbolicName = objPropDef.get_SymbolicName();
+                if (props !=null && props.isPropertyPresent(symbolicName)) {
+                    if (!objPropDef.get_IsSystemOwned() && !objPropDef.get_IsHidden() & !classExcludedPropertiesList.contains(symbolicName)) {
+                        GetClassPropertyDTO prop = new GetClassPropertyDTO();
+                        prop.setSymbolicName(symbolicName);
+                        prop.setDataType(objPropDef.get_DataType().toString());
+                        prop.setRequired(objPropDef.get_IsValueRequired());
+                        prop.setDesc(objPropDef.get_DisplayName());
+
+                        // Extract value based on data type
+                        String value = "";
+                        System.out.println("objPropDef.get_DataType().toString() ***  " + objPropDef.get_DataType().toString());
+                        switch (objPropDef.get_DataType().toString()) {
+                            case "STRING":
+                                if (props.get(symbolicName) instanceof PropertyStringImpl) {
+                                    value = props.getStringValue(symbolicName) != null ? props.getStringValue(symbolicName).toString() : "";
+                                }
+                                break;
+                            case "INTEGER":
+                            case "LONG":
+                                if (props.get(symbolicName) instanceof PropertyInteger32Impl) {
+                                    value = props.getInteger32Value(symbolicName) != null ? Integer.toString(props.getInteger32Value(symbolicName)) : "";
+                                }
+                                break;
+                            case "FLOAT":
+                                if (props.get(symbolicName) instanceof PropertyFloat64Impl) {
+                                    value = props.getFloat64Value(symbolicName) != null ? Double.toString(props.getFloat64Value(symbolicName)) : "";
+                                }
+                                break;
+                            case "DATE":
+                                if (props.get(symbolicName) instanceof PropertyDateTimeImpl) {
+                                    java.util.Date dateValue = props.getDateTimeValue(symbolicName);
+
+
+                                    if (dateValue != null) {
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+                                        value = dateFormat.format(dateValue);
+
+                                    } else {
+                                        value = "";
+                                    }
+                                }
+                                break;
+                        }
+
+                        prop.setValue(value);
+
+                        PropertyTemplate propTemp = objPropDef.get_PropertyTemplate();
+                        LocalizedStringList localizedStringList = propTemp.get_DisplayNames();
+                        LocalizedString localizedString;
+                        for (int i = 0; i < localizedStringList.size(); i++) {
+                            localizedString = (LocalizedString) localizedStringList.get(i);
+                            if (localizedString != null && !localizedString.equals("")) {
+                                if (localizedString.get_LocaleName().contains("ar".toLowerCase())) {
+                                    prop.setDescAr(localizedString.get_LocalizedText());
+                                }
+                                if (localizedString.get_LocaleName().contains("en".toLowerCase())) {
+                                    prop.setDescEn(localizedString.get_LocalizedText());
+                                }
+                            }
+                        }
+
+                        propsList.add(prop);
+                    }
+                }
+
+            }
+            return propsList;
+        } catch (Exception e) {
+            throw new ServiceException("Failed to get Class Properties List", e);
+        }
+    }
+
 
     public String getMimeTypeFromPath(String filePath) {
         filePath = filePath.toLowerCase();
