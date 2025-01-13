@@ -1,5 +1,6 @@
 package com.dataserve.archivemanagement.controller;
 
+import com.dataserve.archivemanagement.exception.APIResponseResult;
 import com.dataserve.archivemanagement.exception.ResourceNotFoundException;
 import com.dataserve.archivemanagement.model.Classifications;
 import com.dataserve.archivemanagement.model.dto.ClassPropertiesDTO;
@@ -17,27 +18,41 @@ public class ClassificationController {
     @Autowired
     private ClassificationsService classificationsService;
 
-
     @GetMapping("/classifications")
-    public ResponseEntity<List<Classifications>> getClassifications(@RequestHeader(name = "Authorization") String token) {
-        return ResponseEntity.ok(classificationsService.listClassifications(token));
+    public ResponseEntity<APIResponseResult<List<Classifications>>> getClassifications(
+            @RequestHeader(name = "Authorization") String token) {
+        List<Classifications> result = classificationsService.listClassifications(token);
+        APIResponseResult<List<Classifications>> response = new APIResponseResult<>(
+                result,
+                HttpStatus.OK.value(),
+                "Classifications retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/classifications/{id}")
-    public ResponseEntity<Classifications> getClassificationsId(@PathVariable(value = "id") Long classificationsId)
-            throws ResourceNotFoundException {
+    public ResponseEntity<APIResponseResult<Classifications>> getClassificationsId(
+            @PathVariable(value = "id") Long classificationsId) throws ResourceNotFoundException {
         Classifications classifications = classificationsService.findById(classificationsId)
-                .orElseThrow(() -> new ResourceNotFoundException("classifications not found for this id :: " + classificationsId));
-        return ResponseEntity.ok().body(classifications);
+                .orElseThrow(() -> new ResourceNotFoundException("Classifications not found for this id :: " + classificationsId));
+        APIResponseResult<Classifications> response = new APIResponseResult<>(
+                classifications,
+                HttpStatus.OK.value(),
+                "Classification retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
-
 
     @GetMapping(value = "/getClassProperties/{symbolicName}")
-    public ResponseEntity<ClassPropertiesDTO> getClassProperties(
+    public ResponseEntity<APIResponseResult<ClassPropertiesDTO>> getClassProperties(
             @RequestHeader(name = "Authorization") String token,
             @PathVariable String symbolicName) {
-        return new ResponseEntity<>(classificationsService.findClassProperties(symbolicName, token), HttpStatus.OK);
+        ClassPropertiesDTO result = classificationsService.findClassProperties(symbolicName, token);
+        APIResponseResult<ClassPropertiesDTO> response = new APIResponseResult<>(
+                result,
+                HttpStatus.OK.value(),
+                "Class properties retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
-
-
 }
