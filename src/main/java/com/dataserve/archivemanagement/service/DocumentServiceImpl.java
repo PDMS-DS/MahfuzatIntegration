@@ -1,5 +1,7 @@
 package com.dataserve.archivemanagement.service;
 
+import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.exception.CustomServiceException;
 import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.exception.DataRequiredException;
 import com.dataserve.archivemanagement.exception.ServiceException;
@@ -7,10 +9,7 @@ import com.dataserve.archivemanagement.model.*;
 import com.dataserve.archivemanagement.model.dto.*;
 import com.dataserve.archivemanagement.repository.*;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
-import com.dataserve.archivemanagement.util.AuditUtil;
-import com.dataserve.archivemanagement.util.FileNetConnection;
-import com.dataserve.archivemanagement.util.LogUtil;
-import com.dataserve.archivemanagement.util.SaveType;
+import com.dataserve.archivemanagement.util.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.filenet.api.collection.ContentElementList;
 import com.filenet.api.constants.PropertyNames;
@@ -65,6 +64,8 @@ public class DocumentServiceImpl implements DocumentService {
     private ClassificationsService classificationsService;
     @Autowired
     private EDSChoicesService edsChoicesService;
+    @Autowired
+    ConfigUtil configUtil;
 
 
     @Override
@@ -529,9 +530,14 @@ public class DocumentServiceImpl implements DocumentService {
     public ClassPropertiesDTO findFileProperties(String docId, String token) {
         UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
         DmsFiles dmsFile = dmsFilesRepository.findByDocumentId(docId);
+//        if (dmsFile == null) {
+//            throw new DataNotFoundException("docId not found");
+//        }
+
         if (dmsFile == null) {
-            throw new DataNotFoundException("docId not found");
+            throw new CustomServiceException(ArchiveErrorCode.DATA_NOT_FOUND.getCode(),configUtil.getLocalMessage("Unique.constraint", null));
         }
+
         Document document =fnService.getDocumentByDocId(loginUser.getUserNameLdap(), loginUser.getPassword(),docId);
         if (document == null) {
             throw new DataNotFoundException("document not found");

@@ -16,6 +16,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(CustomServiceException.class)
+    public ResponseEntity<APIResponseResult<Object>> handleCustomServiceException(CustomServiceException ex) {
+        APIResponseResult<Object> response = new APIResponseResult<>(
+                null,
+                ex.getErrorCode(),
+                ex.getLocalizedMessage()
+        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false),HttpStatus.NOT_FOUND.value());
