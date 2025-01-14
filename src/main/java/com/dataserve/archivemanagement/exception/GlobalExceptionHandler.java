@@ -49,30 +49,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.OK.value());
         APIResponseResult<Object> response = new APIResponseResult<>(
                 null,
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ex.getMessage()
         );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            if (stringBuilder.length() > 0 )
-                stringBuilder.append(", ");
-            errorResponse.addValidationError(error.getField(), error.getDefaultMessage());
-            stringBuilder.append(error.getDefaultMessage());
-        }
-
-        APIResponseResult<Object> response = new APIResponseResult<>(
-                null,
-                HttpStatus.BAD_REQUEST.value(),
-                stringBuilder.toString()
-        );
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    @Override
+//    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+//        ErrorResponse errorResponse = new ErrorResponse();
+//        StringBuilder stringBuilder = new StringBuilder();
+//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+//            if (stringBuilder.length() > 0 )
+//                stringBuilder.append(", ");
+//            errorResponse.addValidationError(error.getField(), error.getDefaultMessage());
+//            stringBuilder.append(error.getDefaultMessage());
+//        }
+//
+//        APIResponseResult<Object> response = new APIResponseResult<>(
+//                null,
+//                HttpStatus.BAD_REQUEST.value(),
+//                stringBuilder.toString()
+//        );
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
 
 

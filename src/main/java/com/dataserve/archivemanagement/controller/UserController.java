@@ -1,5 +1,8 @@
 package com.dataserve.archivemanagement.controller;
 
+import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.exception.CustomServiceException;
+import com.dataserve.archivemanagement.util.ArchiveErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +25,27 @@ public class UserController {
     private UserService service;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private ConfigUtil configUtil;
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<APIResponseResult<Object>> loginAndGenerateToken(
             @RequestBody @Validated LoginRequest authenticationRequest) {
 
-        // Perform authentication (currently commented out but retained for reference)
-        /*
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        */
+        // Validate username
+        if (authenticationRequest.getUsername() == null || authenticationRequest.getUsername().trim().isEmpty()) {
+            throw new CustomServiceException(
+                    ArchiveErrorCode.USERNAME_REQUIRED.getCode(),
+                    configUtil.getLocalMessage("1001", null)
+            );
+        }
 
+        // Validate password
+        if (authenticationRequest.getPassword() == null || authenticationRequest.getPassword().trim().isEmpty()) {
+            throw new CustomServiceException(
+                    ArchiveErrorCode.PASSWORD_REQUIRED.getCode(),
+                    configUtil.getLocalMessage("1002", null)
+            );
+        }
         // Get user details or token from the service layer
         Object result = service.findByUserName(authenticationRequest);
 

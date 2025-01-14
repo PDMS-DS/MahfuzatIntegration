@@ -1,7 +1,9 @@
 package com.dataserve.archivemanagement.service;
 
 
+import com.dataserve.archivemanagement.config.ConfigUtil;
 import com.dataserve.archivemanagement.exception.ConnectionException;
+import com.dataserve.archivemanagement.exception.CustomServiceException;
 import com.dataserve.archivemanagement.exception.DataNotFoundException;
 import com.dataserve.archivemanagement.model.Groups;
 import com.dataserve.archivemanagement.model.LoginRequest;
@@ -9,7 +11,10 @@ import com.dataserve.archivemanagement.model.Permissions;
 import com.dataserve.archivemanagement.model.dto.TokenResponse;
 import com.dataserve.archivemanagement.repository.PermissionRepo;
 import com.dataserve.archivemanagement.security.JwtTokenUtil;
+import com.dataserve.archivemanagement.util.ArchiveErrorCode;
 import com.dataserve.archivemanagement.util.FileNetConnection;
+import com.filenet.api.core.ObjectStore;
+import com.filenet.api.exception.EngineRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
@@ -37,6 +42,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
     private String password;
+    @Autowired
+    private ConfigUtil configUtil;
 
     @Value("${platform.module.permission}")
     private String modulePermission;
@@ -66,21 +73,37 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     public TokenResponse findByUserName(LoginRequest loginRequest) {
         setPassword(loginRequest.getPassword());
-        AppUsers existingUser = usersRepo.findByUserNameLdap(loginRequest.getUsername()).orElseThrow(() -> new DataNotFoundException("user not found"));
+        // Fetch the user from LDAP
+        AppUsers existingUser = usersRepo.findByUserNameLdap(loginRequest.getUsername())
+                .orElseThrow(() -> new CustomServiceException(
+                        ArchiveErrorCode.USER_NOT_FOUND_IN_LDAP.getCode(),
+                        configUtil.getLocalMessage("1003", null) // Localized message for user not found in LDAP
+                ));
+
+
         TokenResponse tokenResponse = new TokenResponse();
         FileNetConnection fileNetConnection = new FileNetConnection();
         try {
-            fileNetConnection.connect(loginRequest.getUsername(), loginRequest.getPassword());
+           fileNetConnection.connect(loginRequest.getUsername(), loginRequest.getPassword());
             tokenResponse.setJwtToken(jwtTokenUtil.generateToken(loadUserByUsername(existingUser.getUserNameLdap()), loginRequest.getPassword()));
             if (existingUser.getGroups() != null && !existingUser.getGroups().isEmpty()) {
                 tokenResponse.setPermissions(getUserPermissions(existingUser.getGroups()));
             }
             return tokenResponse;
         } catch (ConnectionException e) {
+            // Handle EngineRuntimeException specifically
+            if (e.getCause() instanceof EngineRuntimeException) {
+                EngineRuntimeException engineException = (EngineRuntimeException) e.getCause();
+                String exceptionCode = engineException.getAsErrorStack().getExceptionCode().getKey();
+                if ("E_NOT_AUTHENTICATED".equals(exceptionCode)) {
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.BAD_CREDENTIALS.getCode(),
+                            configUtil.getLocalMessage("1004", null) // Localized message for invalid credentials
+                    );
+                }
+            }
             throw new RuntimeException(e);
         }
-
-
     }
 
     public Set<Map<String, Set<String>>> getUserPermissions(Set<Groups> groupList) {
