@@ -530,17 +530,14 @@ public class DocumentServiceImpl implements DocumentService {
     public ClassPropertiesDTO findFileProperties(String docId, String token) {
         UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
         DmsFiles dmsFile = dmsFilesRepository.findByDocumentId(docId);
-//        if (dmsFile == null) {
-//            throw new DataNotFoundException("docId not found");
-//        }
 
         if (dmsFile == null) {
-            throw new CustomServiceException(ArchiveErrorCode.DATA_NOT_FOUND.getCode(),configUtil.getLocalMessage("Unique.constraint", null));
+            throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(),configUtil.getLocalMessage("1005", null));
         }
 
         Document document =fnService.getDocumentByDocId(loginUser.getUserNameLdap(), loginUser.getPassword(),docId);
         if (document == null) {
-            throw new DataNotFoundException("document not found");
+            throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(),configUtil.getLocalMessage("1005", null));
         }
         ClassPropertiesDTO fnProps = fnService.getDocumentPropertiesById(dmsFile.getDocumentClass(),document, token);
         if (fnProps == null || fnProps.getProperties().isEmpty()) {

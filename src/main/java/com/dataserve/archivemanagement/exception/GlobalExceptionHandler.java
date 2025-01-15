@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.util.ArchiveErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<?> serviceException(ServiceException ex, WebRequest request) {
+        ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        APIResponseResult<Object> response = new APIResponseResult<>(
+                null,
+                ArchiveErrorCode.BUSINESS.getCode(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 //    @Override
 //    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 //        ErrorResponse errorResponse = new ErrorResponse();
@@ -93,11 +105,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<?> serviceException(ServiceException ex, WebRequest request) {
-        ErrorResponse errorDetails = new ErrorResponse(new Date(), ex.getMessage(), request.getDescription(false), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+
 
 
 
