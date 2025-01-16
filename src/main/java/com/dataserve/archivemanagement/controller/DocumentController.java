@@ -3,6 +3,7 @@ package com.dataserve.archivemanagement.controller;
 
 import java.util.List;
 
+import com.dataserve.archivemanagement.config.ConfigUtil;
 import com.dataserve.archivemanagement.exception.APIResponseResult;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
@@ -24,13 +25,16 @@ public class DocumentController {
     @Autowired
     private DocumentService documentService;
 
+    @Autowired
+    ConfigUtil configUtil;
+
     @PostMapping(value = "/createDocument", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<APIResponseResult<Object>> createDocument(
             @RequestHeader(name = "Authorization") String token,
             @RequestPart(value = "document") String document,
             @RequestPart("files") List<MultipartFile> files) {
         Object result = documentService.createDocument(token, document, files);
-        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), "Document created successfully");
+        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), configUtil.getLocalMessage("1023", null));
         return ResponseEntity.ok(response);
     }
 
@@ -39,7 +43,7 @@ public class DocumentController {
             @RequestHeader(name = "Authorization") String token,
             @RequestBody CreateDocumentDTO document) {
         Object result = documentService.createDocumentBase64(token, document);
-        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), "Document created successfully (Base64)");
+        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null));
         return ResponseEntity.ok(response);
     }
 
@@ -49,7 +53,7 @@ public class DocumentController {
             @RequestPart(value = "document") @Valid UpdateDocumentDTO document,
             @RequestPart("files") List<MultipartFile> files) {
         Object result = documentService.updateDocument(token, document, files);
-        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), "Document updated successfully");
+        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), configUtil.getLocalMessage("1025", null));
         return ResponseEntity.ok(response);
     }
 
