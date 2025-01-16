@@ -16,8 +16,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>SpringBootForArchiveSch</name>
     <description>Physical Archive project for Spring Boot and sql server for Archive Schema</description>
+    <!--  // {{JAR-SETTING}}  UNCOMMENT Start -->
+    <packaging>war</packaging>
+    <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
 
-    <!-- <packaging>war</packaging> -->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -79,11 +81,14 @@
              -->
             <optional>true</optional>
         </dependency>
-        <!-- <dependency>
+        <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
-        </dependency> -->
+        </dependency>
+        <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -126,25 +131,30 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!-- <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration> -->
+                <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
+
             </plugin>
-           <!--  <plugin>
+            <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.2</version>
                 <configuration>
-                    <source>15</source>
-                    <target>15</target>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
-            </plugin> -->
-            
-             <plugin>
+            </plugin>
+            <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
