@@ -18,7 +18,7 @@ import com.dataserve.archivemanagement.model.LoginRequest;
 import com.dataserve.archivemanagement.service.UserService;
 
 @RestController
-@RequestMapping("/physicalArchive")
+@RequestMapping
 public class UserController {
 
     @Autowired

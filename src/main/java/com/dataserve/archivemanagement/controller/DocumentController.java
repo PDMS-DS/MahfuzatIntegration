@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/physicalArchive")
+@RequestMapping
 public class DocumentController {
 
     @Autowired
