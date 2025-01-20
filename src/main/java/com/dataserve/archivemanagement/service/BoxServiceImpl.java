@@ -1,22 +1,24 @@
 package com.dataserve.archivemanagement.service;
 
-import com.dataserve.archivemanagement.exception.DataNotFoundException;
+import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.exception.CustomServiceException;
 import com.dataserve.archivemanagement.model.*;
-
 import com.dataserve.archivemanagement.model.dto.BoxDto;
 import com.dataserve.archivemanagement.repository.BoxRepo;
-
+import com.dataserve.archivemanagement.util.ArchiveErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 
 @Service
 public class BoxServiceImpl implements BoxService {
 
     @Autowired
     private BoxRepo boxRepo;
+
+    @Autowired
+    private ConfigUtil configUtil;
 
     @Override
     public List<Box> findAll() {
@@ -26,13 +28,19 @@ public class BoxServiceImpl implements BoxService {
     @Override
     public Box findById(Long id) {
         return boxRepo.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Box Not Found by id value: " + id));
+                .orElseThrow(() -> new CustomServiceException(
+                        ArchiveErrorCode.BOX_NOT_FOUND_BY_ID.getCode(), // Error code for box not found by ID
+                        configUtil.getLocalMessage("1027", new String[]{id.toString()}) // Localized message
+                ));
     }
 
     @Override
     public BoxDto findBySerial(Long serial) {
         Box box = boxRepo.findBySerial(serial).orElseThrow(() ->
-                new DataNotFoundException("Box Not Found by serial value: " + serial));
+                new CustomServiceException(
+                        ArchiveErrorCode.BOX_NOT_FOUND_BY_SERIAL.getCode(), // Error code for box not found by serial
+                        configUtil.getLocalMessage("1028", new String[]{serial.toString()}) // Localized message
+                ));
         BoxType boxType = box.getBoxType();
         BoxDto boxDto = new BoxDto();
         Shelf shelf = box.getShelf();
@@ -74,8 +82,5 @@ public class BoxServiceImpl implements BoxService {
         }
 
         return boxDto;
-
-
     }
-
 }

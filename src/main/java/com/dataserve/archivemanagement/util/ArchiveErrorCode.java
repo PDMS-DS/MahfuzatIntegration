@@ -22,9 +22,9 @@ public enum ArchiveErrorCode {
     NOTHING_TO_UPDATE(1019),           // Nothing to update
     FAILED_TO_UPDATE_DOCUMENT(1020),   // Failed to update the document
     CLASSIFICATION_PROPERTIES_NOT_FOUND(1022), // New error code for missing class properties
-    PROPERTIES_REQUIRED(1026); // Properties are required
-
-
+    PROPERTIES_REQUIRED(1026),// Properties are required
+    BOX_NOT_FOUND_BY_ID(1027),
+    BOX_NOT_FOUND_BY_SERIAL(1028);
 
 
 
