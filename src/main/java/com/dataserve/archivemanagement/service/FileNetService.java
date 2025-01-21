@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.dataserve.archivemanagement.config.ConfigUtil;
+import com.dataserve.archivemanagement.exception.CustomServiceException;
+import com.dataserve.archivemanagement.util.ArchiveErrorCode;
 import com.filenet.apiimpl.property.PropertyDateTimeImpl;
 import com.filenet.apiimpl.property.PropertyFloat64Impl;
 import com.filenet.apiimpl.property.PropertyInteger32Impl;
@@ -75,6 +78,8 @@ public class FileNetService {
     String classExcludedPropertiesList;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private ConfigUtil configUtil;
 
     public boolean checkAuthentication(String username, String password) {
         try (FileNetConnection fnUtil = new FileNetConnection()) {
@@ -85,7 +90,7 @@ public class FileNetService {
         }
     }
 
-    public ClassPropertiesDTO getClassPropertiesById(String symbolicName, String token) throws ServiceException {
+    public ClassPropertiesDTO getClassPropertiesById(String symbolicName, String token) throws CustomServiceException {
         try (FileNetConnection fnUtil = new FileNetConnection()) {
             ClassPropertiesDTO results = new ClassPropertiesDTO();
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
@@ -102,12 +107,15 @@ public class FileNetService {
             
             return results;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get all classifications", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
 
-    public ClassPropertiesDTO getDocumentPropertiesById(String symbolicName,Document document, String token) throws ServiceException {
+    public ClassPropertiesDTO getDocumentPropertiesById(String symbolicName,Document document, String token) throws CustomServiceException {
         try (FileNetConnection fnUtil = new FileNetConnection()) {
             ClassPropertiesDTO results = new ClassPropertiesDTO();
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
@@ -124,11 +132,14 @@ public class FileNetService {
 
             return results;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get all classifications", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    public GetDocumentDTO getDocumentByGUID(String username, String password, String GUID) throws ServiceException {
+    public GetDocumentDTO getDocumentByGUID(String username, String password, String GUID) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             PropertyFilter pf = new PropertyFilter();
             pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
@@ -143,11 +154,14 @@ public class FileNetService {
             document.setProperties(propsMap);
             return document;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get Document with ID '" + GUID + "'", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    public Document getDocumentByDocId(String username, String password, String GUID) throws ServiceException {
+    public Document getDocumentByDocId(String username, String password, String GUID) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             PropertyFilter pf = new PropertyFilter();
             pf.addIncludeType(0, null, Boolean.TRUE, FilteredPropertyType.ANY, null);
@@ -155,11 +169,13 @@ public class FileNetService {
             Document doc = Factory.Document.fetchInstance(con.connect(username, password), new Id(GUID), pf);
             return doc;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get Document with ID '" + GUID + "'", e);
-        }
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );        }
     }
 
-    public Document createDocument(String username, String password, CreateDocumentDTO dto, List<File> files) throws ServiceException {
+    public Document createDocument(String username, String password, CreateDocumentDTO dto, List<File> files) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             ObjectStore objectStore = con.connect(username, password);
             Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
@@ -167,8 +183,12 @@ public class FileNetService {
             for (PropertyDTO propDto : dto.getProperties()) {
                 String propertyDataType = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(),  propDto);
                 if (propertyDataType == null) {
-                    throw new ServiceException("DataType " + propDto.getDataType() + " is not supported");
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.UNSUPPORTED_DATA_TYPE.getCode(), // Define a new error code for unsupported data types
+                            configUtil.getLocalMessage("1029", new String[]{propDto.getDataType()}) // Localized message with dynamic data type
+                    );
                 }
+
                 setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), propertyDataType);
             }
 //            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
@@ -177,12 +197,14 @@ public class FileNetService {
             document.save(RefreshMode.REFRESH);
             return document;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new ServiceException("Failed to create document", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    public Document createDocument(String username, String password, CreateDocumentDTO dto) throws ServiceException {
+    public Document createDocument(String username, String password, CreateDocumentDTO dto) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             ObjectStore objectStore = con.connect(username, password);
             Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
@@ -190,8 +212,12 @@ public class FileNetService {
             for (PropertyDTO propDto : dto.getProperties()) {
                 String className = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(), propDto);
                 if (className == null) {
-                    throw new ServiceException("DataType " + propDto.getDataType() + " is not supported");
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.UNSUPPORTED_DATA_TYPE.getCode(), // Error code for unsupported data types
+                            configUtil.getLocalMessage("1029", new String[]{propDto.getDataType()}) // Localized message with dynamic data type
+                    );
                 }
+
                 setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
             }
 //            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
@@ -200,12 +226,14 @@ public class FileNetService {
             document.save(RefreshMode.REFRESH);
             return document;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new ServiceException("Failed to create document cause: " + e.getMessage());
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    public Document updateDocumentProperties(String username, String password, UpdateDocumentDTO dto) throws ServiceException {
+    public Document updateDocumentProperties(String username, String password, UpdateDocumentDTO dto) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             ObjectStore objectStore = con.connect(username, password);
             PropertyFilter pf = new PropertyFilter();
@@ -215,11 +243,14 @@ public class FileNetService {
             doc.save(RefreshMode.REFRESH);
             return doc;
         } catch (Exception e) {
-            throw new ServiceException("Failed to update document properties", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    public Document updateDocumentContents(String username, String password, String guid, List<File> filesList) throws ServiceException {
+    public Document updateDocumentContents(String username, String password, String guid, List<File> filesList) throws CustomServiceException {
         try (FileNetConnection con = new FileNetConnection()) {
             ObjectStore os = con.connect(username, password);
             Document doc = Factory.Document.getInstance(os, ClassNames.DOCUMENT, new Id(guid));
@@ -246,24 +277,33 @@ public class FileNetService {
             reservation.save(RefreshMode.REFRESH);
             return reservation;
         } catch (Exception e) {
-            throw new ServiceException("Failed to update document contents", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    private void setDocumentProperties(Document doc, Map<String, String> propsMap) throws ServiceException {
+    private void setDocumentProperties(Document doc, Map<String, String> propsMap) throws CustomServiceException {
         try {
             Properties props = doc.getProperties();
             for (Entry<String, String> entry : propsMap.entrySet()) {
                 String name = entry.getKey();
                 Property p = props.get(name);
                 if (p == null) {
-                    throw new ServiceException("No property found with name " + name);
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.PROPERTY_NOT_FOUND.getCode(), // Error code for missing properties
+                            configUtil.getLocalMessage("1030", new String[]{name}) // Localized message with dynamic property name
+                    );
                 }
                 String className = p.getClass().getSimpleName();
                 setPropertyValue(props, entry.getKey(), entry.getValue(), className);
             }
         } catch (Exception e) {
-            throw new ServiceException("Failed to set properties for document " + doc.get_Id().toString(), e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
@@ -314,13 +354,16 @@ public class FileNetService {
                     props.putValue(name, dateList);
                     break;
                 default:
-                    throw new ServiceException("Failed to set property " + name + " with value " + value + ". Property datatype " + className + " is not supported");
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.UNSUPPORTED_PROPERTY_DATATYPE.getCode(), // Error code for unsupported property data type
+                            configUtil.getLocalMessage("1031", new String[]{name, value, className}) // Localized message with dynamic placeholders
+                    );
             }
     	}
 
     }
 
-    private String getPropertyValue(Property prop) throws ServiceException {
+    private String getPropertyValue(Property prop) throws CustomServiceException {
         try {
             String className = prop.getClass().getSimpleName();
             switch (className) {
@@ -352,7 +395,10 @@ public class FileNetService {
                     return null;
             }
         } catch (Exception e) {
-            throw new ServiceException("Failed to get value of peroperty " + prop.getPropertyName(), e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
@@ -374,7 +420,7 @@ public class FileNetService {
         return sb.toString();
     }
 
-    private Map<String, String> getDocumentPropertiesMap(Document doc) throws ServiceException {
+    private Map<String, String> getDocumentPropertiesMap(Document doc) throws CustomServiceException {
         Map<String, String> map = new HashMap<>();
         try {
             Properties props = doc.getProperties();
@@ -387,11 +433,14 @@ public class FileNetService {
             }
             return map;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get document properties", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    private List<File> getDocumentContents(Document doc) throws ServiceException {
+    private List<File> getDocumentContents(Document doc) throws CustomServiceException {
         // Get content elements and iterate list.
         ContentElementList docContentList = doc.get_ContentElements();
         Iterator iter = docContentList.iterator();
@@ -409,14 +458,17 @@ public class FileNetService {
                     os.write(buffer, 0, bytesRead);
                 }
                 attachments.add(file);
-            } catch (IOException ioe) {
-                throw new ServiceException("Failed to get document content", ioe);
+            } catch (IOException e) {
+                throw new CustomServiceException(
+                        ArchiveErrorCode.BUSINESS.getCode(),
+                        e.getLocalizedMessage()
+                );
             }
         }
         return attachments;
     }
 
-    private Map<String, byte[]> getDocumentContentsMap(Document doc) throws ServiceException {
+    private Map<String, byte[]> getDocumentContentsMap(Document doc) throws CustomServiceException {
         Map<String, byte[]> map = new HashMap<>();
         try {
             ContentElementList docContentList = doc.get_ContentElements();
@@ -434,17 +486,23 @@ public class FileNetService {
                         buffer.write(output, 0, bytesRead);
                     }
                     map.put(fileName, output);
-                } catch (IOException ioe) {
-                    throw new ServiceException("Failed to get document content", ioe);
+                } catch (IOException e) {
+                    throw new CustomServiceException(
+                            ArchiveErrorCode.BUSINESS.getCode(),
+                            e.getLocalizedMessage()
+                    );
                 }
             }
             return map;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get document contents", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
-    private ContentElementList getContentElements(List<File> files) throws ServiceException {
+    private ContentElementList getContentElements(List<File> files) throws CustomServiceException {
         ContentElementList contentElementList = Factory.ContentElement.createList();
         for (File file : files) {
             try {
@@ -454,13 +512,16 @@ public class FileNetService {
                 contentElementList.add(content);
             } catch (Exception e) {
                 String message = "Error adding content to element list" + (file == null ? "" : " for file '" + file.getName() + "'");
-                throw new ServiceException(message, e);
+                throw new CustomServiceException(
+                        ArchiveErrorCode.BUSINESS.getCode(),
+                        e.getLocalizedMessage()
+                );
             }
         }
         return contentElementList;
     }
 
-    private ContentElementList getContentElementsBase64(List<CustomDocument> documents) throws ServiceException {
+    private ContentElementList getContentElementsBase64(List<CustomDocument> documents) throws CustomServiceException {
         ContentElementList contentElementList = Factory.ContentElement.createList();
         for (CustomDocument file : documents) {
             try {
@@ -476,13 +537,16 @@ public class FileNetService {
                 contentElementList.add(content);
             } catch (Exception e) {
                 String message = "Error adding content to element list" + (file == null ? "" : " for file '" + file.getFileName() + "'");
-                throw new ServiceException(message, e);
+                throw new CustomServiceException(
+                        ArchiveErrorCode.BUSINESS.getCode(),
+                        e.getLocalizedMessage()
+                );
             }
         }
         return contentElementList;
     }
 
-    private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDefinitionList objPropDefs) throws ServiceException {
+    private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDefinitionList objPropDefs) throws CustomServiceException {
         try {
             List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
             Iterator iter = objPropDefs.iterator();
@@ -528,12 +592,15 @@ public class FileNetService {
             }
             return propsList;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get Class Properties List", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
 
-    private List<GetClassPropertyDTO> getDocumentPropertiesValuesList(PropertyDefinitionList objPropDefs,Document document) throws ServiceException {
+    private List<GetClassPropertyDTO> getDocumentPropertiesValuesList(PropertyDefinitionList objPropDefs,Document document) throws CustomServiceException {
         try {
             Properties props = document.getProperties();
             List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
@@ -610,7 +677,10 @@ public class FileNetService {
             }
             return propsList;
         } catch (Exception e) {
-            throw new ServiceException("Failed to get Class Properties List", e);
+            throw new CustomServiceException(
+                    ArchiveErrorCode.BUSINESS.getCode(),
+                    e.getLocalizedMessage()
+            );
         }
     }
 
