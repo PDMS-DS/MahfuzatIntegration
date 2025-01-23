@@ -123,7 +123,14 @@
             <version>1.0</version>
 <!--             <systemPath>${basedir}\lib\jace.jar</systemPath> -->
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-util</artifactId>
+            <version>9.0.0.M26</version>
+        </dependency>
+
     </dependencies>
+
 
     <build>
         <finalName>${project.name}</finalName>
