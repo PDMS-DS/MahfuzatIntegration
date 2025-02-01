@@ -66,11 +66,40 @@ public class ClassificationsServiceImpl implements ClassificationsService {
     }
 
     @Override
+//    public List<Classifications> listClassifications(String token) {
+//        try {
+//            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+//            List<Classifications> objectList = null;
+//            String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
+//            if (loginUser.getUserNameLdap().equals(superAdmin)) {
+//                List<Classifications> b = classificationsRepo.listClassifications();
+//                return b;
+//            } else {
+//                AppUsers user = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(
+//                        () -> new CustomServiceException(
+//                                ArchiveErrorCode.USER_NOT_FOUND.getCode(),
+//                                configUtil.getLocalMessage("1008", null)
+//                        )
+//                );
+//                Long deptId = user.getDepartment().getDeptId();
+//                List<Classifications> b = classificationsRepo.listClassifications();
+//                return b;
+//
+//            }
+//        }catch (CustomServiceException e) {
+//            throw e;
+//        } catch (Exception e) {
+//            throw new CustomServiceException(
+//                    ArchiveErrorCode.BUSINESS.getCode(),
+//                    e.getLocalizedMessage()
+//            );
+//        }
+//    }
     public List<Classifications> listClassifications(String token) {
         try {
             UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-            List<Classifications> objectList = null;
             String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
+
             if (loginUser.getUserNameLdap().equals(superAdmin)) {
                 return classificationsRepo.listClassifications();
             } else {
@@ -84,7 +113,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
                 return classificationsRepo.findByClassDept_Departments_DeptId(deptId);
 
             }
-        }catch (CustomServiceException e) {
+        } catch (CustomServiceException e) {
             throw e;
         } catch (Exception e) {
             throw new CustomServiceException(
@@ -93,6 +122,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
             );
         }
     }
+
 
     public ClassPropertiesDTO findClassProperties(String symbolicName, String token) {
         try {

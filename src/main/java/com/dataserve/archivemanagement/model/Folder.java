@@ -1,29 +1,22 @@
 package com.dataserve.archivemanagement.model;
 
-import java.util.Date;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
+import com.dataserve.archivemanagement.util.LocalizationUtil;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "FOLDER")
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({
+        "folderId", "nameAr", "nameEn", "folderName", "boxId", "capacity", "addedOn", "serial"})
 public class Folder {
 
     @Id
@@ -37,6 +30,11 @@ public class Folder {
     @Column(name = "NAME_EN", nullable = true)
     private String nameEn;
 
+    @Transient
+    @JsonProperty("folderName")
+    public String getFolderName() {
+        return LocalizationUtil.getLocalizedValue(this.nameAr, this.nameEn);
+    }
 
     @Column(name = "BOX_ID", nullable = true)
     private Long boxId;
@@ -44,24 +42,18 @@ public class Folder {
     @Column(name = "CAPACITY", nullable = true)
     private Long capacity;
 
-
     @Column(name = "ADDED_ON", nullable = true)
     private Date addedOn;
 
-//    @Column(name = "CLASSIFICATION_ID", nullable = true , insertable = false , updatable = false)
-//    private Long classificationId;
-
     @Column(name = "SERIAL", nullable = true)
     private Long serial;
+
     @JoinColumn(name = "CENTER_ID")
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private StorageCenter storageCenter;
-
 
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "CLASSIFICATION_ID")
     private Classifications classifications;
-
-
 }

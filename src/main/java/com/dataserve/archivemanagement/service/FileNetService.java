@@ -548,46 +548,42 @@ public class FileNetService {
 
     private List<GetClassPropertyDTO> getClassPropertiesList(PropertyDefinitionList objPropDefs) throws CustomServiceException {
         try {
-            List<GetClassPropertyDTO> propsList = new ArrayList<GetClassPropertyDTO>();
+            List<GetClassPropertyDTO> propsList = new ArrayList<>();
             Iterator iter = objPropDefs.iterator();
-        	PropertyDefinition objPropDef = null;
-            while (iter.hasNext()) {
-            	objPropDef = (PropertyDefinition) iter.next();
-            	String symbolicName = objPropDef.get_SymbolicName();
+            PropertyDefinition objPropDef;
 
-                if (!objPropDef.get_IsSystemOwned() && !objPropDef.get_IsHidden() & !classExcludedPropertiesList.contains(symbolicName)) {
-	                GetClassPropertyDTO prop = new GetClassPropertyDTO();
-	                prop.setSymbolicName(symbolicName);
-	                prop.setDataType(objPropDef.get_DataType().toString());
-	                prop.setRequired(objPropDef.get_IsValueRequired());
-	                prop.setDesc(objPropDef.get_DisplayName()); 
-	                PropertyTemplate propTemp = objPropDef.get_PropertyTemplate();
-					LocalizedStringList localizedStringList = propTemp.get_DisplayNames();
-					LocalizedString localizedString;
-					for (int i = 0; i < localizedStringList.size(); i++) {
-						localizedString = (LocalizedString) localizedStringList.get(i);
-						if(localizedString != null && !localizedString.equals("")) {
-							if(localizedString.get_LocaleName().contains("ar".toLowerCase())){						
-								prop.setDescAr(localizedString.get_LocalizedText());
-							}
-							if(localizedString.get_LocaleName().contains("en".toLowerCase())){						
-								prop.setDescEn(localizedString.get_LocalizedText());
-							}
-						}
-					}
-				
-//                if (objPropDef.get_ChoiceList() != null) {
-//                    prop.setChoicListName(objPropDef.get_ChoiceList().get_DisplayName());
-//                    ChoiceList cl = objPropDef.get_ChoiceList();
-//                    Iterator itrs = cl.get_ChoiceValues().iterator();
-//                    List<String> values = new ArrayList<String>();
-//                    while (itrs.hasNext()) {
-//                        Choice c = (Choice) itrs.next();
-//                        values.add(c.get_Name());
-//                    }
-//                    prop.setChoicListValues(values);
-//                }
-                propsList.add(prop);
+            while (iter.hasNext()) {
+                objPropDef = (PropertyDefinition) iter.next();
+                String symbolicName = objPropDef.get_SymbolicName();
+
+                if (!objPropDef.get_IsSystemOwned() && !objPropDef.get_IsHidden() && !classExcludedPropertiesList.contains(symbolicName)) {
+                    GetClassPropertyDTO prop = new GetClassPropertyDTO();
+                    prop.setSymbolicName(symbolicName);
+                    prop.setDataType(objPropDef.get_DataType().toString());
+
+                    if ("DocumentTitle".equals(symbolicName)) {
+                        prop.setRequired(true);
+                    } else {
+                        prop.setRequired(objPropDef.get_IsValueRequired());
+                    }
+
+                    prop.setDesc(objPropDef.get_DisplayName());
+                    PropertyTemplate propTemp = objPropDef.get_PropertyTemplate();
+                    LocalizedStringList localizedStringList = propTemp.get_DisplayNames();
+                    LocalizedString localizedString;
+                    for (int i = 0; i < localizedStringList.size(); i++) {
+                        localizedString = (LocalizedString) localizedStringList.get(i);
+                        if(localizedString != null && !localizedString.equals("")) {
+                            if(localizedString.get_LocaleName().contains("ar".toLowerCase())){
+                                prop.setDescAr(localizedString.get_LocalizedText());
+                            }
+                            if(localizedString.get_LocaleName().contains("en".toLowerCase())){
+                                prop.setDescEn(localizedString.get_LocalizedText());
+                            }
+                        }
+                    }
+
+                    propsList.add(prop);
                 }
             }
             return propsList;

@@ -1,9 +1,7 @@
 package com.dataserve.archivemanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
+import com.dataserve.archivemanagement.util.LocalizationUtil;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,12 +15,16 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({
+        "classificationId", "saveType", "classArName", "classEnName", "className", "sympolicName", "parentID", "classCode"
+})
 public class Classifications {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CLASSIFICATION_ID", nullable = false)
     private Long classificationId;
+
     @Column(name = "SAVE_TYPE")
     private Long saveType;
 
@@ -32,6 +34,11 @@ public class Classifications {
     @Column(name = "CLASS_EN_NAME", nullable = true)
     private String classEnName;
 
+    @Transient // Ensures it is not stored in the DB
+    @JsonProperty("className") // Ensures it appears in the JSON response
+    private String getClassName() {
+        return LocalizationUtil.getLocalizedValue(this.classArName, this.classEnName);
+    }
 
     @Column(name = "SYMPOLIC_NAME", nullable = true)
     private String sympolicName;
@@ -43,15 +50,10 @@ public class Classifications {
     private String classCode;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ClassDept> classDept;
 
     @JsonBackReference
-    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "classifications", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Folder> folder;
-
-
-
 }
