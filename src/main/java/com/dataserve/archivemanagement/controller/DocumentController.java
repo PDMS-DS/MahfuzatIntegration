@@ -2,10 +2,13 @@ package com.dataserve.archivemanagement.controller;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.dataserve.archivemanagement.config.ConfigUtil;
 import com.dataserve.archivemanagement.exception.APIResponseResult;
 import com.dataserve.archivemanagement.model.dto.CreateDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.FilteredSearchDocumentDTO;
+import com.dataserve.archivemanagement.model.dto.SearchDocumentDTO;
 import com.dataserve.archivemanagement.model.dto.UpdateDocumentDTO;
 import com.dataserve.archivemanagement.service.DocumentService;
 
@@ -60,12 +63,14 @@ public class DocumentController {
     @GetMapping(value = "/search")
     public ResponseEntity<APIResponseResult<Object>> searchOnDocument(
             @RequestHeader(name = "Authorization") String token,
+            @RequestHeader(name = "Accept-Language", required = false, defaultValue = "en") String language,
             @RequestParam String documentClass,
             @RequestParam String searchValue) {
-        Object result = documentService.searchInPropertiesAndContent(token, documentClass, searchValue);
-        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), "Search completed successfully");
+        List<SearchDocumentDTO> results = documentService.searchInPropertiesAndContent(token, documentClass, searchValue, language);
+        APIResponseResult<Object> response = new APIResponseResult<>(results, HttpStatus.OK.value(), "Search completed successfully");
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping(value = "/fileContent/{docId}")
     public ResponseEntity<APIResponseResult<Object>> getFileContent(
@@ -84,4 +89,5 @@ public class DocumentController {
         APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), "File properties retrieved successfully");
         return ResponseEntity.ok(response);
     }
+
 }

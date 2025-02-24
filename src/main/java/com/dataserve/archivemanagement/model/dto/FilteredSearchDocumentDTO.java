@@ -10,18 +10,13 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchDocumentDTO {
-    private String usernameAr;
-    private String usernameEn;
-    private String docId;
-    private String departmentNameAr;
-    private String departmentNameEn;
-    private String documentTitle;
-    private String folderNameAr;
-    private String folderNameEn;
-    private Long noPages;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FilteredSearchDocumentDTO {
     private String username;
+    private String docId;
     private String departmentName;
+    private String documentTitle;
     private String folderName;
+    private Long noPages;
 }
 

@@ -602,28 +602,65 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue) {
+//    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue) {
+//        try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
+//            UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+//            ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
+//            List<GetClassPropertyDTO> classProperties = getClassProperties(documentClass, token);
+//            String query = null;
+////            if (searchContent == null)
+////                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
+////            else {
+//            query = buildContentQueryAndWhereCondition(classProperties, documentClass, searchValue);
+////            }
+//            SearchSQL sql = new SearchSQL();
+//            sql.setQueryString(query);
+//            SearchScope searchScope = new SearchScope(os);
+//            DocumentSet documents = (DocumentSet) searchScope.fetchObjects(sql, Integer.valueOf(50), null, Boolean.valueOf(true));
+//            return getSearchDocumentResult(documents.iterator());
+//        } catch (CustomServiceException e) {
+//            throw e;
+//        } catch (Exception e) {
+//            throw new ServiceException(e.getMessage(),e);
+//        }
+//    }
+
+    public List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue, String language) {
         try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
             UserDTO user = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             ObjectStore os = fileNetConnectionUtil.connect(user.getUserNameLdap(), user.getPassword());
+
             List<GetClassPropertyDTO> classProperties = getClassProperties(documentClass, token);
-            String query = null;
-//            if (searchContent == null)
-//                query = buildFiledQueryAndWhereCondition(classProperties, documentName, propertyName);
-//            else {
-            query = buildContentQueryAndWhereCondition(classProperties, documentClass, searchValue);
-//            }
+            String query = buildContentQueryAndWhereCondition(classProperties, documentClass, searchValue);
+
             SearchSQL sql = new SearchSQL();
             sql.setQueryString(query);
             SearchScope searchScope = new SearchScope(os);
-            DocumentSet documents = (DocumentSet) searchScope.fetchObjects(sql, Integer.valueOf(50), null, Boolean.valueOf(true));
-            return getSearchDocumentResult(documents.iterator());
+            DocumentSet documents = (DocumentSet) searchScope.fetchObjects(sql, 50, null, true);
+
+            List<SearchDocumentDTO> results = getSearchDocumentResult(documents.iterator());
+            results.forEach(dto -> addLocalizedFields(dto, language));
+
+            return results;
         } catch (CustomServiceException e) {
             throw e;
         } catch (Exception e) {
-            throw new ServiceException(e.getMessage(),e);
+            throw new ServiceException(e.getMessage(), e);
         }
     }
+
+    private void addLocalizedFields(SearchDocumentDTO dto, String language) {
+        if ("ar".equalsIgnoreCase(language)) {
+            dto.setUsername(dto.getUsernameAr());
+            dto.setDepartmentName(dto.getDepartmentNameAr());
+            dto.setFolderName(dto.getFolderNameAr());
+        } else { // Default to English
+            dto.setUsername(dto.getUsernameEn());
+            dto.setDepartmentName(dto.getDepartmentNameEn());
+            dto.setFolderName(dto.getFolderNameEn());
+        }
+    }
+
 
     public List<SearchDocumentDTO> getSearchDocumentResult(Iterator iterator) {
         List<SearchDocumentDTO> searchDocumentDTOS = new ArrayList<>();
