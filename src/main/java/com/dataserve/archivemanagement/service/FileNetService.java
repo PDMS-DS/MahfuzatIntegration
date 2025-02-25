@@ -597,7 +597,9 @@ public class FileNetService {
                             }
                         }
                     }
-
+                    if (objPropDef.get_Cardinality().toString().equalsIgnoreCase("LIST")){
+                        prop.setMultiValue(true);
+                    }
                     prop.setDesc(LocalizationUtil.getLocalizedValue(prop.getDescAr(), prop.getDescEn()));
                     propsList.add(prop);
                 }
@@ -627,7 +629,7 @@ public class FileNetService {
                         prop.setSymbolicName(symbolicName);
                         prop.setDataType(objPropDef.get_DataType().toString());
                         prop.setRequired(objPropDef.get_IsValueRequired());
-                        prop.setDesc(objPropDef.get_DisplayName());
+//                        prop.setDesc(objPropDef.get_DisplayName());
 
                         // Extract value based on data type
                         String value = "";
@@ -681,6 +683,7 @@ public class FileNetService {
                                 }
                             }
                         }
+                        prop.setDesc(LocalizationUtil.getLocalizedValue(prop.getDescAr(), prop.getDescEn()));
 
                         propsList.add(prop);
                     }
