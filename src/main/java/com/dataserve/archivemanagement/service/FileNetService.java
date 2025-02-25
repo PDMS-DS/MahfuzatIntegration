@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import com.dataserve.archivemanagement.config.ConfigUtil;
 import com.dataserve.archivemanagement.exception.CustomServiceException;
 import com.dataserve.archivemanagement.util.ArchiveErrorCode;
+import com.dataserve.archivemanagement.util.LocalizationUtil;
+import com.filenet.api.exception.EngineRuntimeException;
 import com.filenet.apiimpl.property.PropertyDateTimeImpl;
 import com.filenet.apiimpl.property.PropertyFloat64Impl;
 import com.filenet.apiimpl.property.PropertyInteger32Impl;
@@ -106,12 +108,25 @@ public class FileNetService {
             results.setProperties(getClassPropertiesList( objPropDefs));
             
             return results;
-        } catch (Exception e) {
+        }
+        catch (EngineRuntimeException e) {
+            String exceptionCode = e.getAsErrorStack().getExceptionCode().getKey();
+            if ("E_BAD_CLASSID".equals(exceptionCode)) {
+                throw new CustomServiceException(
+                        ArchiveErrorCode.CLASS_NOT_FOUND.getCode(), // Use proper error code
+                        configUtil.getLocalMessage("1033", new String[]{symbolicName}) // More specific error message
+                );
+            }
+
+        }
+        catch (Exception e) {
             throw new CustomServiceException(
                     ArchiveErrorCode.BUSINESS.getCode(),
                     e.getLocalizedMessage()
             );
         }
+
+        return null;
     }
 
 
@@ -583,6 +598,7 @@ public class FileNetService {
                         }
                     }
 
+                    prop.setDesc(LocalizationUtil.getLocalizedValue(prop.getDescAr(), prop.getDescEn()));
                     propsList.add(prop);
                 }
             }
@@ -742,7 +758,7 @@ public class FileNetService {
     private String getPropertyDtoDataType(ObjectStore objectStore, String documentClassName,  PropertyDTO propDto) throws Exception {  
     	PropertyDefinition  propertyDefinition = fetchPropertyDefinitionByName(objectStore , documentClassName,  propDto.getSymbolicName());
     	if(propertyDefinition !=null && propDto.getPropertyValue() != null  && !propDto.getPropertyValue().equalsIgnoreCase("")) {
-    	       if (propDto.getPropertyValue().startsWith("[")) {
+    	       if (!propertyDefinition.get_Cardinality().toString().equalsIgnoreCase("SINGLE")) {
     	            switch (propertyDefinition.get_DataType().toString().toUpperCase()) {
     	                case "BOOLEAN":
     	                    return "PropertyBooleanListImpl";

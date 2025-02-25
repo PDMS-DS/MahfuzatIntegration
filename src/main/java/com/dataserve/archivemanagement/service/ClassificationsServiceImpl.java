@@ -4,6 +4,7 @@ package com.dataserve.archivemanagement.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 import com.dataserve.archivemanagement.config.ConfigUtil;
@@ -95,13 +96,44 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 //            );
 //        }
 //    }
+//    public List<Classifications> listClassifications(String token) {
+//        try {
+//            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+//            String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
+//
+//            if (loginUser.getUserNameLdap().equals(superAdmin)) {
+//                return classificationsRepo.listClassifications();
+//            } else {
+//                AppUsers user = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(
+//                        () -> new CustomServiceException(
+//                                ArchiveErrorCode.USER_NOT_FOUND.getCode(),
+//                                configUtil.getLocalMessage("1008", null)
+//                        )
+//                );
+//                Long deptId = user.getDepartment().getDeptId();
+//                return classificationsRepo.findByClassDept_Departments_DeptId(deptId);
+//
+//            }
+//        } catch (CustomServiceException e) {
+//            throw e;
+//        } catch (Exception e) {
+//            throw new CustomServiceException(
+//                    ArchiveErrorCode.BUSINESS.getCode(),
+//                    e.getLocalizedMessage()
+//            );
+//        }
+//    }
+
+
     public List<Classifications> listClassifications(String token) {
         try {
             UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
             String superAdmin = configUtil.fetchProperties("SUPER_USER_NAME");
 
+            List<Classifications> classifications;
+
             if (loginUser.getUserNameLdap().equals(superAdmin)) {
-                return classificationsRepo.listClassifications();
+                classifications = classificationsRepo.listClassifications();
             } else {
                 AppUsers user = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap()).orElseThrow(
                         () -> new CustomServiceException(
@@ -109,10 +141,19 @@ public class ClassificationsServiceImpl implements ClassificationsService {
                                 configUtil.getLocalMessage("1008", null)
                         )
                 );
-                Long deptId = user.getDepartment().getDeptId();
-                return classificationsRepo.findByClassDept_Departments_DeptId(deptId);
 
+                Long deptId = user.getDepartment().getDeptId();
+                classifications = classificationsRepo.findByClassDept_Departments_DeptId(deptId);
             }
+
+            // ✅ Filter classifications to keep only unique symbolicNames
+
+            return classifications.stream()
+                    .collect(Collectors.toMap(Classifications::getSympolicName, c -> c, (existing, replacement) -> existing))
+                    .values()
+                    .stream()
+                    .collect(Collectors.toList());
+
         } catch (CustomServiceException e) {
             throw e;
         } catch (Exception e) {
