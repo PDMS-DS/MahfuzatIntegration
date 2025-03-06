@@ -46,6 +46,9 @@ public class Classifications {
     @Column(name = "PARENT_ID", nullable = true)
     private Long parentID;
 
+    @Column(name = "is_fn_added", nullable = true)
+    private boolean isFnAdded;
+
     @Column(name = "CLASS_CODE", nullable = true)
     private String classCode;
 
