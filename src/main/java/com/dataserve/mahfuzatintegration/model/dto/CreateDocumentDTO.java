@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -13,15 +17,12 @@ import java.util.List;
 public class CreateDocumentDTO {
     @NotNull(message = "Document properties cannot be null")
     private List<PropertyDTO> properties;
-    private String creator;
     private String documentClassName;
-    @JsonProperty("DocumentTitle")
-    private String documentTitle;
-    private Integer folderNo;
-    private SaveType saveType;
     private Integer numOfPages;
-    private Integer isOriginal;
+    @NotNull(message = "integrationDocumentId  cannot be null")
+    private String integrationDocumentId;
+    @NotNull(message = "integrationSystemId  cannot be null")
+    private Long integrationSystemId;
     private List<CustomDocument> uploadDocumentList;
-
 
 }

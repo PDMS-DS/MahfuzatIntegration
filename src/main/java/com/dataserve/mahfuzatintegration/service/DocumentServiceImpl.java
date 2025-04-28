@@ -50,6 +50,8 @@ public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private DmsFilesRepository dmsFilesRepository;
     @Autowired
+    private DmsIntegrationFilesRepository dmsIntegrationFilesRepository;
+    @Autowired
     private DmsAuditRepository dmsAuditRepository;
     @Autowired
     private DMSPropertyAuditRepository dmsPropertyAuditRepository;
@@ -70,70 +72,70 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public String createDocument(String token, String document, List<MultipartFile> files) {
         try {
-            CreateDocumentDTO documentDTO = new ObjectMapper().readValue(document, CreateDocumentDTO.class);
-
-            if (validationBeforeSaveDocument(documentDTO)) {
-                Folder folder = folderRepo.findBySerial(Long.valueOf(documentDTO.getFolderNo()))
-                        .orElseThrow(() -> new CustomServiceException(
-                                ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(),
-                                configUtil.getLocalMessage("1009", null)
-                        ));
-
-                if (documentDTO.getSaveType().equals(SaveType.UPLOAD_FILE) && documentDTO.getNumOfPages() == null) {
-                    throw new CustomServiceException(
-                            ArchiveErrorCode.NUMBER_OF_PAGES_REQUIRED.getCode(),
-                            configUtil.getLocalMessage("1006", null)
-                    );
-                }
-                List<File> filesList = new ArrayList<>();
-                files.stream().forEach(f -> {
-                    try {
-                        byte[] bytes = f.getBytes();
-                        File file = Files.write(Paths.get(tempFilePath + File.separator + f.getOriginalFilename()), bytes).toFile();
-                        filesList.add(file);
-                    } catch (IOException e) {
-                        throw new CustomServiceException(
-                                ArchiveErrorCode.FAILED_TO_RECEIVE_FILES.getCode(),
-                                configUtil.getLocalMessage("1007", null)
-                        );
-                    }
-                });
-
-                if (files.size() != filesList.size()) {
-                    throw new CustomServiceException(
-                            ArchiveErrorCode.FAILED_TO_RECEIVE_FILES.getCode(),
-                            configUtil.getLocalMessage("1007", null)
-                    );
-                }
-
-                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-                Document newDocument = fnService.createDocument(
-                        loginUser.getUserNameLdap(), loginUser.getPassword(), documentDTO, filesList
-                );
-
-                String result = newDocument.get_Id().toString();
-                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created through integration");
-
-                JSONObject params = new JSONObject(document);
-                params.put("files", filesList);
-                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-                audit.run();
-
-                String documentId = result.substring(1, result.length() - 1);
-
-                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap())
-                        .orElseThrow(() -> new CustomServiceException(
-                                ArchiveErrorCode.USER_NOT_FOUND_IN_LDAP.getCode(),
-                                configUtil.getLocalMessage("1003", null)
-                        ));
-
-                DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser, folder.getFolderId());
-                if (dmsFiles != null) {
-                    DMSAudit dmsAudit = addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-                    saveDMSPropertyAudit(documentDTO.getProperties(), dmsAudit.getAuditId());
-                }
-                return documentId;
-            }
+//            CreateDocumentDTO documentDTO = new ObjectMapper().readValue(document, CreateDocumentDTO.class);
+//
+//            if (validationBeforeSaveDocument(documentDTO)) {
+//                Folder folder = folderRepo.findBySerial(Long.valueOf(documentDTO.getFolderNo()))
+//                        .orElseThrow(() -> new CustomServiceException(
+//                                ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(),
+//                                configUtil.getLocalMessage("1009", null)
+//                        ));
+//
+//                if (documentDTO.getSaveType().equals(SaveType.UPLOAD_FILE) && documentDTO.getNumOfPages() == null) {
+//                    throw new CustomServiceException(
+//                            ArchiveErrorCode.NUMBER_OF_PAGES_REQUIRED.getCode(),
+//                            configUtil.getLocalMessage("1006", null)
+//                    );
+//                }
+//                List<File> filesList = new ArrayList<>();
+//                files.stream().forEach(f -> {
+//                    try {
+//                        byte[] bytes = f.getBytes();
+//                        File file = Files.write(Paths.get(tempFilePath + File.separator + f.getOriginalFilename()), bytes).toFile();
+//                        filesList.add(file);
+//                    } catch (IOException e) {
+//                        throw new CustomServiceException(
+//                                ArchiveErrorCode.FAILED_TO_RECEIVE_FILES.getCode(),
+//                                configUtil.getLocalMessage("1007", null)
+//                        );
+//                    }
+//                });
+//
+//                if (files.size() != filesList.size()) {
+//                    throw new CustomServiceException(
+//                            ArchiveErrorCode.FAILED_TO_RECEIVE_FILES.getCode(),
+//                            configUtil.getLocalMessage("1007", null)
+//                    );
+//                }
+//
+//                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+//                Document newDocument = fnService.createDocument(
+//                        loginUser.getUserNameLdap(), loginUser.getPassword(), documentDTO, filesList
+//                );
+//
+//                String result = newDocument.get_Id().toString();
+//                LogUtil.info("Document'" + newDocument.get_Id() + "' has been created through integration");
+//
+//                JSONObject params = new JSONObject(document);
+//                params.put("files", filesList);
+//                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
+//                audit.run();
+//
+//                String documentId = result.substring(1, result.length() - 1);
+//
+//                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap())
+//                        .orElseThrow(() -> new CustomServiceException(
+//                                ArchiveErrorCode.USER_NOT_FOUND_IN_LDAP.getCode(),
+//                                configUtil.getLocalMessage("1003", null)
+//                        ));
+//
+//                DmsFiles dmsFiles = addDMSFilesOnDataBase(documentDTO, documentId, existingUser, folder.getFolderId());
+//                if (dmsFiles != null) {
+//                    DMSAudit dmsAudit = addDMSAuditOnDataBase(documentDTO, documentId, existingUser.getUserId(), dmsFiles.getFileId());
+//                    saveDMSPropertyAudit(documentDTO.getProperties(), dmsAudit.getAuditId());
+//                }
+//                return documentId;
+//            }
 
         } catch (CustomServiceException e) {
             throw e;
@@ -152,55 +154,31 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public String createDocumentBase64(String token, CreateDocumentDTO document) {
         try {
-            if (document.getProperties() == null || document.getProperties().isEmpty()) {
-                throw new CustomServiceException(
-                        ArchiveErrorCode.PROPERTIES_REQUIRED.getCode(),
-                        configUtil.getLocalMessage("1026", null) // Localized message for "Properties are required"
-                );
-            }
-            // Validate the document before saving
-            if (validationBeforeSaveDocument(document)) {
-                Folder folder = null;
-                if (document.getFolderNo() != null && document.getFolderNo() > 0) {
-                    folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo()))
-                            .orElseThrow(() -> new CustomServiceException(
-                                    ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(), // Use FOLDER_NOT_FOUND (1006)
-                                    configUtil.getLocalMessage("1009", null)    // Folder not found message
-                            ));
-                }
+            // Call the validateProperties method to perform additional validation
+            String documentTitle = validateProperties(
+                    document.getProperties(),
+                    document.getIntegrationDocumentId(),
+                    document.getIntegrationSystemId()
+            );
 
-                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
 
-                Document newDocument = fnService.createDocument(
-                        loginUser.getUserNameLdap(),
-                        loginUser.getPassword(),
-                        document
-                );
+            Document newDocument = fnService.createDocument(
+                    loginUser.getUserNameLdap(),
+                    loginUser.getPassword(),
+                    document
+            );
 
-                String result = newDocument.get_Id().toString();
-                LogUtil.info("Document '" + newDocument.get_Id() + "' has been created through integration");
+            String result = newDocument.get_Id().toString();
+            LogUtil.info("Document '" + newDocument.get_Id() + "' has been created through integration");
 
-                JSONObject params = new JSONObject(document);
-                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-                audit.run();
 
-                // Save document information in the database
-                String documentId = result.substring(1, result.length() - 1);
+            // Save document information in the database
+            String documentId = result.substring(1, result.length() - 1);
 
-                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap())
-                        .orElseThrow(() -> new CustomServiceException(
-                                ArchiveErrorCode.USER_NOT_FOUND_IN_LDAP.getCode(), // Use USER_NOT_FOUND_IN_LDAP (1003)
-                                configUtil.getLocalMessage("1003", null)          // User not found in LDAP
-                        ));
+            DmsIntegrationFiles dmsFiles = addDmsIntegrationFiles(document, documentId, documentTitle);
+            return dmsFiles.getArchivedDocumentId();
 
-                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser,
-                        (folder != null) ? folder.getFolderId() : null);
-                if (dmsFiles != null) {
-                    DMSAudit dmsAudit = addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-                    saveDMSPropertyAudit(document.getProperties(), dmsAudit.getAuditId());
-                }
-                return documentId;
-            }
         } catch (CustomServiceException e) {
             throw e;
         } catch (DataRequiredException e) {
@@ -209,208 +187,59 @@ public class DocumentServiceImpl implements DocumentService {
             LogUtil.error("Failed to create document", e);
             throw new ServiceException(e.getMessage());
         }
-        return null;
     }
-//    public String createDocumentBase64(String token, CreateDocumentDTO document) {
-//        try {
-//
-//            if (document.getProperties() == null || document.getProperties().isEmpty()) {
-//                throw new CustomServiceException(
-//                        ArchiveErrorCode.PROPERTIES_REQUIRED.getCode(),
-//                        configUtil.getLocalMessage("1026", null) // Localized message for "Properties are required"
-//                );
-//            }
-//            // Validate the document before saving
-//            if (validationBeforeSaveDocument(document)) {
-//                Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo()))
-//                        .orElseThrow(() -> new CustomServiceException(
-//                                ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(), // Use FOLDER_NOT_FOUND (1006)
-//                                configUtil.getLocalMessage("1009", null)    // Folder not found message
-//                        ));
-//
-//                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-//
-//                Document newDocument = fnService.createDocument(
-//                        loginUser.getUserNameLdap(),
-//                        loginUser.getPassword(),
-//                        document
-//                );
-//
-//                String result = newDocument.get_Id().toString();
-//                LogUtil.info("Document '" + newDocument.get_Id() + "' has been created through integration");
-//
-//                JSONObject params = new JSONObject(document);
-//                AuditUtil audit = new AuditUtil("/createDocument", loginUser.getUserNameLdap(), params, result);
-//                audit.run();
-//
-//                // Save document information in the database
-//                String documentId = result.substring(1, result.length() - 1);
-//
-//                AppUsers existingUser = usersRepo.findByUserNameLdap(loginUser.getUserNameLdap())
-//                        .orElseThrow(() -> new CustomServiceException(
-//                                ArchiveErrorCode.USER_NOT_FOUND_IN_LDAP.getCode(), // Use USER_NOT_FOUND_IN_LDAP (1003)
-//                                configUtil.getLocalMessage("1003", null)          // User not found in LDAP
-//                        ));
-//
-//                DmsFiles dmsFiles = addDMSFilesOnDataBase(document, documentId, existingUser, folder.getFolderId());
-//                if (dmsFiles != null) {
-//                    DMSAudit dmsAudit = addDMSAuditOnDataBase(document, documentId, existingUser.getUserId(), dmsFiles.getFileId());
-//                    saveDMSPropertyAudit(document.getProperties(), dmsAudit.getAuditId());
-//                }
-//                return documentId;
-//            }
-//
-//        }  catch (CustomServiceException e) {
-//            throw e;
-//        } catch (DataRequiredException e) {
-//            throw new ServiceException(e.getMessage());
-//        } catch (Exception e) {
-//            LogUtil.error("Failed to create document", e);
-//            throw new ServiceException(e.getMessage());
-//        }
-//        return null;
-//    }
 
-//    boolean validationBeforeSaveDocument(CreateDocumentDTO document) {
-//        if (document.getSaveType().equals(SaveType.SCAN_FILE) && document.getFolderNo() == null) {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.FOLDER_NUMBER_REQUIRED.getCode(), // New code for folder number required
-//                    configUtil.getLocalMessage("1012", null)          // Localized message
-//            );
-//        }
-//
-//        if (document.getSaveType().equals(SaveType.UPLOAD_FILE) && document.getNumOfPages() == null) {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.NUMBER_OF_PAGES_REQUIRED.getCode(), // New code for number of pages required
-//                    configUtil.getLocalMessage("1006", null)            // Localized message
-//            );
-//        }
-//
-//        Folder folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo()))
-//                .orElseThrow(() -> new CustomServiceException(
-//                        ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(), // New code for folder not found
-//                        configUtil.getLocalMessage("1012", null)    // Localized message
-//                ));
-//
-//        Long sumOfFiles = dmsFilesRepository.countByFolderNo(folder.getFolderId());
-//        if (sumOfFiles >= folder.getCapacity() && folder.getCapacity() != 0) {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.FOLDER_CAPACITY_FULL.getCode(), // New code for folder capacity full
-//                    configUtil.getLocalMessage("1013", null)        // Localized message
-//            );
-//        }
-//
-//        StorageCenter storageCenter = folder.getStorageCenter();
-//        if (storageCenter == null) {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.STORAGE_CENTER_NOT_FOUND.getCode(), // New code for storage center not found
-//                    configUtil.getLocalMessage("1014", null)            // Localized message
-//            );
-//        }
-//
-//        StorageCenterType storageCenterType = storageCenter.getStorageCenterType();
-//        if (storageCenterType == null) {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.INVALID_STORAGE_CENTER_TYPE.getCode(), // New code for invalid storage center type
-//                    configUtil.getLocalMessage("1015", null)               // Localized message
-//            );
-//        }
-//
-//        Classifications classifications = folder.getClassifications();
-//        if (classifications != null) {
-//            if (storageCenterType.getStorageCenterTypeId() != 3
-//                    && !storageCenterType.getStorageCenterTypeId().equals(classifications.getSaveType())) {
-//                String savedType = saveType(classifications.getSaveType());
-//                throw new CustomServiceException(
-//                        ArchiveErrorCode.STORAGE_TYPE_MISMATCH.getCode(), // New code for storage type mismatch
-//                        configUtil.getLocalMessage("1017", null)         // Localized message
-//                );
-//            }
-//        } else {
-//            throw new CustomServiceException(
-//                    ArchiveErrorCode.CLASSIFICATION_INVALID.getCode(), // New code for invalid classification
-//                    configUtil.getLocalMessage("1016", null)           // Localized message
-//            );
-//        }
-//        return true;
-//    }
+    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
+        DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
+        dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
+        dmsFiles.setIntegrationDocumentName(documentTitle);
+        dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
+        dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
+        dmsFiles.setTransactionId(getRowCountPlusOne());
+        dmsFiles.setArchivedDocumentId(documentId);
+        dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId()); // Assuming you have this data in the User
+        dmsFiles.setCreatedDate(new Date());
+        return dmsIntegrationFilesRepository.save(dmsFiles);
+    }
 
-    boolean validationBeforeSaveDocument(CreateDocumentDTO document) {
-        // Check if folderNo is required based on saveType and isOriginal
-        if (document.getSaveType().equals(SaveType.SCAN_FILE)) {
-            if (document.getFolderNo() == null || document.getFolderNo() == 0) {
-                throw new CustomServiceException(
-                        ArchiveErrorCode.FOLDER_NUMBER_REQUIRED.getCode(),
-                        configUtil.getLocalMessage("1012", null) // Localized message for folder number required
-                );
-            }
-        }
-
-        if (document.getSaveType().equals(SaveType.UPLOAD_FILE) && document.getIsOriginal() != null && document.getIsOriginal() == 1) {
-            if (document.getFolderNo() == null || document.getFolderNo() == 0) {
-                throw new CustomServiceException(
-                        ArchiveErrorCode.FOLDER_NUMBER_REQUIRED.getCode(),
-                        configUtil.getLocalMessage("1012", null) // Localized message for folder number required
-                );
-            }
-        }
-
-        // If folderNo is optional, allow it to remain null or 0 without throwing an exception
-
-        Folder folder = null;
-        if (document.getFolderNo() != null && document.getFolderNo() != 0) {
-            folder = folderRepo.findBySerial(Long.valueOf(document.getFolderNo()))
-                    .orElseThrow(() -> new CustomServiceException(
-                            ArchiveErrorCode.FOLDER_NOT_FOUND.getCode(), // Code for folder not found
-                            configUtil.getLocalMessage("1009", null)    // Localized message
-                    ));
-        }
-
-        // Proceed with existing validation logic
-        Long sumOfFiles = folder != null ? dmsFilesRepository.countByFolderNo(folder.getFolderId()) : 0;
-        if (folder != null && sumOfFiles >= folder.getCapacity() && folder.getCapacity() != 0) {
-            throw new CustomServiceException(
-                    ArchiveErrorCode.FOLDER_CAPACITY_FULL.getCode(), // Code for folder capacity full
-                    configUtil.getLocalMessage("1013", null)        // Localized message
-            );
-        }
-
-        StorageCenter storageCenter = folder != null ? folder.getStorageCenter() : null;
-        if (folder != null && storageCenter == null) {
-            throw new CustomServiceException(
-                    ArchiveErrorCode.STORAGE_CENTER_NOT_FOUND.getCode(), // Code for storage center not found
-                    configUtil.getLocalMessage("1014", null)            // Localized message
-            );
-        }
-
-        StorageCenterType storageCenterType = storageCenter != null ? storageCenter.getStorageCenterType() : null;
-        if (folder != null && storageCenterType == null) {
-            throw new CustomServiceException(
-                    ArchiveErrorCode.INVALID_STORAGE_CENTER_TYPE.getCode(), // Code for invalid storage center type
-                    configUtil.getLocalMessage("1015", null)               // Localized message
-            );
-        }
-
-        Classifications classifications = folder != null ? folder.getClassifications() : null;
-        if (folder != null && classifications != null) {
-            if (storageCenterType.getStorageCenterTypeId() != 3
-                    && !storageCenterType.getStorageCenterTypeId().equals(classifications.getSaveType())) {
-                throw new CustomServiceException(
-                        ArchiveErrorCode.STORAGE_TYPE_MISMATCH.getCode(), // Code for storage type mismatch
-                        configUtil.getLocalMessage("1017", null)         // Localized message
-                );
-            }
-        } else if (folder != null) {
-            throw new CustomServiceException(
-                    ArchiveErrorCode.CLASSIFICATION_INVALID.getCode(), // Code for invalid classification
-                    configUtil.getLocalMessage("1016", null)           // Localized message
-            );
-        }
-
-        return true;
+    public Long getRowCountPlusOne() {
+        Long rowCount = dmsIntegrationFilesRepository.countRows();
+        return rowCount + 1; // Add 1 to the count
     }
 
 
+    public String validateProperties(List<PropertyDTO> properties, String integrationDocumentId, Long integrationSystemId) {
+        // 1. Validate that integrationDocumentId and integrationSystemId are not null
+        if (integrationDocumentId == null || integrationDocumentId.isEmpty()) {
+            throw new CustomServiceException(
+                    ArchiveErrorCode.INTEGRATION_DOCUMENT_ID_REQUIRED.getCode(),
+                    configUtil.getLocalMessage("1035", null) // Localized message for "Integration Document ID is required"
+            );
+        }
+
+        if (integrationSystemId == null) {
+            throw new CustomServiceException(
+                    ArchiveErrorCode.INTEGRATION_SYSTEM_ID_REQUIRED.getCode(),
+                    configUtil.getLocalMessage("1036", null) // Localized message for "Integration System ID is required"
+            );
+        }
+
+        // 2. Check if the "DocumentTitle" property exists
+        Optional<PropertyDTO> documentTitleProperty = properties.stream()
+                .filter(property -> "DocumentTitle".equals(property.getSymbolicName()))
+                .findFirst();
+
+        if (!documentTitleProperty.isPresent()) {
+            // If "DocumentTitle" is not found, throw an exception with a localized message
+            throw new CustomServiceException(
+                    ArchiveErrorCode.DOCUMENT_TITLE_REQUIRED.getCode(),
+                    configUtil.getLocalMessage("1034", null) // Localized message for "Document title is required"
+            );
+        }
+
+        // Return the property value for "DocumentTitle"
+        return documentTitleProperty.get().getPropertyValue();
+    }
     public Boolean saveDMSPropertyAudit(List<PropertyDTO> properties, Long dmsAuditId) {
         if (properties != null && properties.size() > 0) {
             List<DMSPropertiesAudit> dmsPropertiesAudits = properties.stream().map(propertyDTO -> new DMSPropertiesAudit(propertyDTO.getSymbolicName(), propertyDTO.getPropertyValue(), new DMSAudit(dmsAuditId))).collect(Collectors.toList());
@@ -429,41 +258,6 @@ public class DocumentServiceImpl implements DocumentService {
         }
         return null;
     }
-
-//    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser, Long folderId) {
-//
-//        DmsFiles dmsFiles = new DmsFiles();
-//        dmsFiles.setDocumentId(documentId);
-//        dmsFiles.setDocumentClass(documentDTO.getDocumentClassName());
-//        dmsFiles.setDocumentName(documentDTO.getDocumentTitle());
-//        dmsFiles.setFolderNo(Long.valueOf(folderId));
-//        dmsFiles.setNoPages(Long.valueOf(documentDTO.getNumOfPages()));
-//        dmsFiles.setOCRStatus(0);
-//        dmsFiles.setUserId(existingUser.getUserId());
-//        dmsFiles.setSourceId(1);
-//        dmsFiles.setDepartments(existingUser.getDepartment());
-//        dmsFiles.setCreateDate(new Date());
-//        dmsFiles.setModifiedDate(new Date());
-//        return dmsFilesRepository.save(dmsFiles);
-//
-//    }
-
-    public DmsFiles addDMSFilesOnDataBase(CreateDocumentDTO documentDTO, String documentId, AppUsers existingUser, Long folderId) {
-        DmsFiles dmsFiles = new DmsFiles();
-        dmsFiles.setDocumentId(documentId);
-        dmsFiles.setDocumentClass(documentDTO.getDocumentClassName());
-        dmsFiles.setDocumentName(documentDTO.getDocumentTitle());
-        dmsFiles.setFolderNo((folderId != null && folderId > 0) ? folderId : null); // Ensure folderNo is null when optional
-        dmsFiles.setNoPages(documentDTO.getNumOfPages() != null ? Long.valueOf(documentDTO.getNumOfPages()) : null);
-        dmsFiles.setOCRStatus(0);
-        dmsFiles.setUserId(existingUser.getUserId());
-        dmsFiles.setSourceId(1);
-        dmsFiles.setDepartments(existingUser.getDepartment());
-        dmsFiles.setCreateDate(new Date());
-        dmsFiles.setModifiedDate(new Date());
-        return dmsFilesRepository.save(dmsFiles);
-    }
-
 
 
     public DMSAudit addDMSAuditOnDataBase(CreateDocumentDTO documentDTO, String documentId, Long userId, Long fileId) {
@@ -682,7 +476,7 @@ public class DocumentServiceImpl implements DocumentService {
         if (dmsFiles != null) {
             searchDocument = new SearchDocumentDTO();
             // Retrieve user details associated with the document
-             user = usersRepo.findById(dmsFiles.getUserId()).orElseThrow(() ->
+            user = usersRepo.findById(dmsFiles.getUserId()).orElseThrow(() ->
                     new CustomServiceException(
                             ArchiveErrorCode.USER_NOT_FOUND.getCode(), // Use USER_NOT_FOUND (1009)
                             configUtil.getLocalMessage("1008", null)  // Localized message for "User not found"
@@ -764,7 +558,6 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
 
-
     public FileContentDto getFileContent(String token, String docId) {
         StringBuilder stringBuilder1 = new StringBuilder();
         try (FileNetConnection fileNetConnectionUtil = new FileNetConnection()) {
@@ -781,7 +574,7 @@ public class DocumentServiceImpl implements DocumentService {
             pf.addIncludeProperty(new FilterElement(null, null, null, PropertyNames.CONTENT_ELEMENTS, null));
             Document doc = Factory.Document.fetchInstance(os, stringBuilder.toString(), pf);
             if (doc == null) {
-                throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(),configUtil.getLocalMessage("1005", null));
+                throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(), configUtil.getLocalMessage("1005", null));
             }
             String base64 = "";
             // Get content elements and iterate list.
@@ -824,54 +617,54 @@ public class DocumentServiceImpl implements DocumentService {
 
 
     public ClassPropertiesDTO findFileProperties(String docId, String token) {
-        try{
-        UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
-        DmsFiles dmsFile = dmsFilesRepository.findByDocumentId(docId);
+        try {
+            UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+            DmsFiles dmsFile = dmsFilesRepository.findByDocumentId(docId);
 
-        if (dmsFile == null) {
-            throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(),configUtil.getLocalMessage("1005", null));
-        }
+            if (dmsFile == null) {
+                throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(), configUtil.getLocalMessage("1005", null));
+            }
 
-        Document document =fnService.getDocumentByDocId(loginUser.getUserNameLdap(), loginUser.getPassword(),docId);
-        if (document == null) {
-            throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(),configUtil.getLocalMessage("1005", null));
-        }
-        ClassPropertiesDTO fnProps = fnService.getDocumentPropertiesById(dmsFile.getDocumentClass(),document, token);
-        if (fnProps == null || fnProps.getProperties().isEmpty()) {
-            throw new CustomServiceException(
-                    ArchiveErrorCode.CLASSIFICATION_PROPERTIES_NOT_FOUND.getCode(), // Error code for missing properties
-                    configUtil.getLocalMessage("1022", null)                        // Localized message for no properties
-            );
-        }
+            Document document = fnService.getDocumentByDocId(loginUser.getUserNameLdap(), loginUser.getPassword(), docId);
+            if (document == null) {
+                throw new CustomServiceException(ArchiveErrorCode.DOCUMENT_NOT_FOUND.getCode(), configUtil.getLocalMessage("1005", null));
+            }
+            ClassPropertiesDTO fnProps = fnService.getDocumentPropertiesById(dmsFile.getDocumentClass(), document, token);
+            if (fnProps == null || fnProps.getProperties().isEmpty()) {
+                throw new CustomServiceException(
+                        ArchiveErrorCode.CLASSIFICATION_PROPERTIES_NOT_FOUND.getCode(), // Error code for missing properties
+                        configUtil.getLocalMessage("1022", null)                        // Localized message for no properties
+                );
+            }
 
-        // Enrich properties with EDS choices
-        Map<String, EDSChoiceListDTO> edsProps = edsChoicesService.getClassEDSPropertesBySymbolicName(fnProps.getClassName());
-        if (!edsProps.isEmpty()) {
-            for (GetClassPropertyDTO prop : fnProps.getProperties()) {
-                if (edsProps.containsKey(prop.getSymbolicName())) {
-                    EDSChoiceListDTO listDto = edsProps.get(prop.getSymbolicName());
-                    if (listDto.getDependOn() != null) {
-                        prop.setDependOn(listDto.getDependOn());
-                    }
+            // Enrich properties with EDS choices
+            Map<String, EDSChoiceListDTO> edsProps = edsChoicesService.getClassEDSPropertesBySymbolicName(fnProps.getClassName());
+            if (!edsProps.isEmpty()) {
+                for (GetClassPropertyDTO prop : fnProps.getProperties()) {
+                    if (edsProps.containsKey(prop.getSymbolicName())) {
+                        EDSChoiceListDTO listDto = edsProps.get(prop.getSymbolicName());
+                        if (listDto.getDependOn() != null) {
+                            prop.setDependOn(listDto.getDependOn());
+                        }
 
-                    // Match choice value to set displayName
-                    if (listDto.getChoiceList() != null) {
-                        for (EDSChoiceDTO choice : listDto.getChoiceList()) {
-                            if (choice.getValue().equals(prop.getValue()) && "ar".equals(choice.getLang())) {
-                                prop.setValue(choice.getDisplayName());
-                                break;
+                        // Match choice value to set displayName
+                        if (listDto.getChoiceList() != null) {
+                            for (EDSChoiceDTO choice : listDto.getChoiceList()) {
+                                if (choice.getValue().equals(prop.getValue()) && "ar".equals(choice.getLang())) {
+                                    prop.setValue(choice.getDisplayName());
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
+            return fnProps;
+        } catch (CustomServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage(), e);
         }
-        return fnProps;
-    } catch (CustomServiceException e) {
-        throw e;
-    } catch (Exception e) {
-        throw new ServiceException(e.getMessage(),e);
-    }
 
     }
 }
