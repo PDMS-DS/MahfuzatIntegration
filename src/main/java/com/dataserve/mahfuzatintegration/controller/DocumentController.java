@@ -39,13 +39,30 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
+//    @PostMapping(value = "/createDocumentBase64", consumes = {MediaType.APPLICATION_JSON_VALUE})
+//    public ResponseEntity<APIResponseResult<Object>> createDocumentBase64(
+//            @RequestHeader(name = "Authorization") String token,
+//            @RequestBody CreateDocumentDTO document) {
+//        Object result = documentService.createDocumentBase64(token, document);
+//        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null));
+//        return ResponseEntity.ok(response);
+//    }
+
+
     @PostMapping(value = "/createDocumentBase64", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<APIResponseResult<Object>> createDocumentBase64(
             @RequestHeader(name = "Authorization") String token,
-            @RequestBody CreateDocumentDTO document) {
-        Object result = documentService.createDocumentBase64(token, document);
-        APIResponseResult<Object> response = new APIResponseResult<>(result, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null));
+            @RequestBody List<CreateDocumentDTO> documents) {
+
+        // Store all the document IDs that are created
+        List<String> documentIds = documentService.createDocumentBase64(token, documents);
+
+        // Return the list of document IDs as the response
+        APIResponseResult<Object> response = new APIResponseResult<>(
+                documentIds, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null)
+        );
         return ResponseEntity.ok(response);
+
     }
 
     @PostMapping(value = "/updateDocument", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})

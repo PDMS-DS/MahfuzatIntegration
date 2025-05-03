@@ -189,6 +189,54 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
+    @Override
+    public List<String> createDocumentBase64(String token, List<CreateDocumentDTO> documents) {
+        List<String> documentIds = new ArrayList<>();
+
+        try {
+            // ✅ Step 1: Generate one transactionId for this batch
+            Long transactionId = getRowCountPlusOne();
+
+            // Process each document
+            for (CreateDocumentDTO document : documents) {
+                // Validate properties
+                String documentTitle = validateProperties(
+                        document.getProperties(),
+                        document.getIntegrationDocumentId(),
+                        document.getIntegrationSystemId()
+                );
+
+                // Fetch user from token
+                UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
+
+                // Create document externally
+                Document newDocument = fnService.createDocument(
+                        loginUser.getUserNameLdap(),
+                        loginUser.getPassword(),
+                        document
+                );
+
+                String result = newDocument.get_Id().toString();
+                LogUtil.info("Document '" + newDocument.get_Id() + "' has been created through integration");
+
+                String documentId = result.substring(1, result.length() - 1);
+
+                // ✅ Step 2: Save document info using the same transactionId
+                DmsIntegrationFiles dmsFiles = addDmsIntegrationFiles(document, documentId, documentTitle, transactionId);
+                documentIds.add(dmsFiles.getArchivedDocumentId());
+            }
+
+            return documentIds;
+
+        } catch (CustomServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            LogUtil.error("Failed to create documents", e);
+            throw new ServiceException(e.getMessage());
+        }
+    }
+
+
     public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
         DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
         dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
@@ -201,6 +249,20 @@ public class DocumentServiceImpl implements DocumentService {
         dmsFiles.setCreatedDate(new Date());
         return dmsIntegrationFilesRepository.save(dmsFiles);
     }
+
+    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle, Long transactionId) {
+        DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
+        dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
+        dmsFiles.setIntegrationDocumentName(documentTitle);
+        dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
+        dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
+        dmsFiles.setTransactionId(transactionId); // ✅ Same transactionId for all
+        dmsFiles.setArchivedDocumentId(documentId);
+        dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId());
+        dmsFiles.setCreatedDate(new Date());
+        return dmsIntegrationFilesRepository.save(dmsFiles);
+    }
+
 
     public Long getRowCountPlusOne() {
         Long rowCount = dmsIntegrationFilesRepository.countRows();
@@ -240,6 +302,8 @@ public class DocumentServiceImpl implements DocumentService {
         // Return the property value for "DocumentTitle"
         return documentTitleProperty.get().getPropertyValue();
     }
+
+
     public Boolean saveDMSPropertyAudit(List<PropertyDTO> properties, Long dmsAuditId) {
         if (properties != null && properties.size() > 0) {
             List<DMSPropertiesAudit> dmsPropertiesAudits = properties.stream().map(propertyDTO -> new DMSPropertiesAudit(propertyDTO.getSymbolicName(), propertyDTO.getPropertyValue(), new DMSAudit(dmsAuditId))).collect(Collectors.toList());

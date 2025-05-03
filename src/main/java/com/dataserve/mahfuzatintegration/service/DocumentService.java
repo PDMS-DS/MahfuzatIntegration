@@ -13,6 +13,8 @@ public interface DocumentService {
 
     String createDocumentBase64(String token, CreateDocumentDTO document);
 
+    List<String> createDocumentBase64(String token, List<CreateDocumentDTO> documents);
+
     List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue, String language);
     FileContentDto getFileContent(String token, String docId);
 
