@@ -190,26 +190,22 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public List<String> createDocumentBase64(String token, List<CreateDocumentDTO> documents) {
+    public Map<String, Object> createDocumentBase64(String token, List<CreateDocumentDTO> documents) {
+        Map<String, Object> resultMap = new HashMap<>();
         List<String> documentIds = new ArrayList<>();
 
         try {
-            // ✅ Step 1: Generate one transactionId for this batch
             Long transactionId = getRowCountPlusOne();
 
-            // Process each document
             for (CreateDocumentDTO document : documents) {
-                // Validate properties
                 String documentTitle = validateProperties(
                         document.getProperties(),
                         document.getIntegrationDocumentId(),
                         document.getIntegrationSystemId()
                 );
 
-                // Fetch user from token
                 UserDTO loginUser = jwtTokenUtil.getUsernameAndPasswordFromToken(token);
 
-                // Create document externally
                 Document newDocument = fnService.createDocument(
                         loginUser.getUserNameLdap(),
                         loginUser.getPassword(),
@@ -221,12 +217,13 @@ public class DocumentServiceImpl implements DocumentService {
 
                 String documentId = result.substring(1, result.length() - 1);
 
-                // ✅ Step 2: Save document info using the same transactionId
                 DmsIntegrationFiles dmsFiles = addDmsIntegrationFiles(document, documentId, documentTitle, transactionId);
                 documentIds.add(dmsFiles.getArchivedDocumentId());
             }
 
-            return documentIds;
+            resultMap.put("transactionId", transactionId);
+            resultMap.put("documentIds", documentIds);
+            return resultMap;
 
         } catch (CustomServiceException e) {
             throw e;
@@ -235,7 +232,6 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ServiceException(e.getMessage());
         }
     }
-
 
     public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
         DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();

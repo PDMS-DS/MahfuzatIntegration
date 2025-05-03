@@ -4,6 +4,7 @@ import com.dataserve.mahfuzatintegration.model.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DocumentService {
     //    String createDocument(String token, CreateDocumentDTO document, List<MultipartFile> files);
@@ -13,7 +14,7 @@ public interface DocumentService {
 
     String createDocumentBase64(String token, CreateDocumentDTO document);
 
-    List<String> createDocumentBase64(String token, List<CreateDocumentDTO> documents);
+    Map<String, Object> createDocumentBase64(String token, List<CreateDocumentDTO> documents);
 
     List<SearchDocumentDTO> searchInPropertiesAndContent(String token, String documentClass, String searchValue, String language);
     FileContentDto getFileContent(String token, String docId);

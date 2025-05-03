@@ -2,6 +2,7 @@ package com.dataserve.mahfuzatintegration.controller;
 
 
 import java.util.List;
+import java.util.Map;
 
 import com.dataserve.mahfuzatintegration.config.ConfigUtil;
 import com.dataserve.mahfuzatintegration.exception.APIResponseResult;
@@ -54,16 +55,14 @@ public class DocumentController {
             @RequestHeader(name = "Authorization") String token,
             @RequestBody List<CreateDocumentDTO> documents) {
 
-        // Store all the document IDs that are created
-        List<String> documentIds = documentService.createDocumentBase64(token, documents);
+        Map<String, Object> result = documentService.createDocumentBase64(token, documents);
 
-        // Return the list of document IDs as the response
         APIResponseResult<Object> response = new APIResponseResult<>(
-                documentIds, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null)
+                result, HttpStatus.OK.value(), configUtil.getLocalMessage("1024", null)
         );
         return ResponseEntity.ok(response);
-
     }
+
 
     @PostMapping(value = "/updateDocument", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<APIResponseResult<Object>> updateDocument(
