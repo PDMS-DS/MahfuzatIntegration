@@ -192,7 +192,8 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public Map<String, Object> createDocumentBase64(String token, List<CreateDocumentDTO> documents) {
         Map<String, Object> resultMap = new HashMap<>();
-        List<String> documentIds = new ArrayList<>();
+        List<DocumentCreateItemDTO> items = new ArrayList<>();
+        List<String> documentIds = new ArrayList<>(); // optional: keep for backward compatibility
 
         try {
             Long transactionId = getRowCountPlusOne();
@@ -212,17 +213,24 @@ public class DocumentServiceImpl implements DocumentService {
                         document
                 );
 
-                String result = newDocument.get_Id().toString();
-                LogUtil.info("Document '" + newDocument.get_Id() + "' has been created through integration");
+                String rawId = newDocument.get_Id().toString();
+                LogUtil.info("Document '" + rawId + "' has been created through integration");
 
-                String documentId = result.substring(1, result.length() - 1);
+                String archivedDocumentId = rawId.substring(1, rawId.length() - 1);
 
-                DmsIntegrationFiles dmsFiles = addDmsIntegrationFiles(document, documentId, documentTitle, transactionId);
+                DmsIntegrationFiles dmsFiles = addDmsIntegrationFiles(document, archivedDocumentId, documentTitle, transactionId);
+
+                items.add(new DocumentCreateItemDTO(
+                        dmsFiles.getArchivedDocumentId(),
+                        dmsFiles.getIntegrationDocumentId(),
+                        dmsFiles.getIntegrationSystemId()
+                ));
+
                 documentIds.add(dmsFiles.getArchivedDocumentId());
             }
 
             resultMap.put("transactionId", transactionId);
-            resultMap.put("documentIds", documentIds);
+            resultMap.put("documents", items);
             return resultMap;
 
         } catch (CustomServiceException e) {
@@ -232,7 +240,6 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ServiceException(e.getMessage());
         }
     }
-
     public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
         DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
         dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
