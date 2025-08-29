@@ -49,11 +49,11 @@ public class AuditUtil implements Runnable {
 			LogUtil.error("Failed to log audit {api: " + api + ", username: " + username + ", params: " + params.toString() + "} into database", e);
 		}
 		
-		try (ElasticsearchConnection con = new ElasticsearchConnection()) {
+		/*try (ElasticsearchConnection con = new ElasticsearchConnection()) {
 			con.audit(auditId, dto);
 		} catch (Exception e) {
 			LogUtil.error("Failed to log audit {api: " + api + ", username: " + username + ", params: " + params.toString() + "} into kibana", e);
-		}
+		}*/
 	}
 
 }
