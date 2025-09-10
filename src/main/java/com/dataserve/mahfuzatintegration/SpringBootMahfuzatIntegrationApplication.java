@@ -19,7 +19,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 //}
 
 @SpringBootApplication
-@EnableAspectJAutoProxy(exposeProxy = true)
+//@EnableAspectJAutoProxy(exposeProxy = true)
 public class SpringBootMahfuzatIntegrationApplication extends SpringBootServletInitializer {
 
 	@Override
@@ -28,9 +28,9 @@ public class SpringBootMahfuzatIntegrationApplication extends SpringBootServletI
 		return application.sources(SpringBootMahfuzatIntegrationApplication.class);
 	}
 
-
+	
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootMahfuzatIntegrationApplication.class, args);
 	}
-
+	
 }

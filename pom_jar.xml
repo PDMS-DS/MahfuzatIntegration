@@ -17,7 +17,7 @@
     <name>MahfuzatIntegration</name>
     <description>MahfuzatIntegration project for Spring Boot and sql server for integration Schema</description>
     <!--  // {{JAR-SETTING}}  UNCOMMENT Start -->
-    <packaging>war</packaging>
+    <!-- <packaging>war</packaging> -->
     <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
 
 
@@ -74,11 +74,11 @@
             <optional>true</optional>
         </dependency>
         <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
-        </dependency>
+        </dependency> -->
         <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
 
         <dependency>
@@ -129,26 +129,26 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
-                <executions>
+               <!--  <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions> -->
                 <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
 
             </plugin>
             <!--  // {{JAR-SETTING}} UNCOMMENT Start  -->
 
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
-            </plugin>
+            </plugin> -->
             <!--  // {{JAR-SETTING}} UNCOMMENT End  -->
 
             <plugin>
