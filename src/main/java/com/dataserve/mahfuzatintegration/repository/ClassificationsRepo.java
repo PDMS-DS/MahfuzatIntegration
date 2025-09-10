@@ -23,4 +23,8 @@ public interface ClassificationsRepo extends JpaRepository<Classifications, Long
             + "WHERE cd.departments.deptId = :deptId "
             + "AND c.isFnAdded = 1")
     List<Classifications> findByClassDept_Departments_DeptId(@Param("deptId") Long deptId);
+
+    // A) If Classifications has field `symbolicName`
+    @Query("SELECT c.classificationId FROM Classifications c WHERE c.sympolicName = :symbolicName")
+    Long findIdBySymbolicName(@Param("symbolicName") String symbolicName);
 }

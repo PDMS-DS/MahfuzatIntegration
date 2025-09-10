@@ -68,6 +68,12 @@ public class DocumentServiceImpl implements DocumentService {
     @Autowired
     ConfigUtil configUtil;
 
+    @Autowired
+    private ClassificationsRepo classificationsRepo;
+
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
 
     @Override
     public String createDocument(String token, String document, List<MultipartFile> files) {
@@ -188,7 +194,18 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ServiceException(e.getMessage());
         }
     }
-
+    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
+        DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
+        dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
+        dmsFiles.setIntegrationDocumentName(documentTitle);
+        dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
+        dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
+        dmsFiles.setTransactionId(getRowCountPlusOne());
+        dmsFiles.setArchivedDocumentId(documentId);
+        dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId()); // Assuming you have this data in the User
+        dmsFiles.setCreatedDate(new Date());
+        return dmsIntegrationFilesRepository.save(dmsFiles);
+    }
     @Override
     public Map<String, Object> createDocumentBase64(String token, List<CreateDocumentDTO> documents) {
         Map<String, Object> resultMap = new HashMap<>();
@@ -240,29 +257,64 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ServiceException(e.getMessage());
         }
     }
-    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle) {
-        DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
-        dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
-        dmsFiles.setIntegrationDocumentName(documentTitle);
-        dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
-        dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
-        dmsFiles.setTransactionId(getRowCountPlusOne());
-        dmsFiles.setArchivedDocumentId(documentId);
-        dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId()); // Assuming you have this data in the User
-        dmsFiles.setCreatedDate(new Date());
-        return dmsIntegrationFilesRepository.save(dmsFiles);
-    }
 
-    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle, Long transactionId) {
+
+//    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO, String documentId, String documentTitle, Long transactionId) {
+//        DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
+//        dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
+//        dmsFiles.setIntegrationDocumentName(documentTitle);
+//        dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
+//        dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
+//        dmsFiles.setTransactionId(transactionId); // ✅ Same transactionId for all
+//        dmsFiles.setArchivedDocumentId(documentId);
+//        dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId());
+//        dmsFiles.setCreatedDate(new Date());
+//        return dmsIntegrationFilesRepository.save(dmsFiles);
+//    }
+
+    public DmsIntegrationFiles addDmsIntegrationFiles(CreateDocumentDTO documentDTO,
+                                                      String documentId,
+                                                      String documentTitle,
+                                                      Long transactionId) {
         DmsIntegrationFiles dmsFiles = new DmsIntegrationFiles();
         dmsFiles.setIntegrationDocumentId(documentDTO.getIntegrationDocumentId());
         dmsFiles.setIntegrationDocumentName(documentTitle);
         dmsFiles.setIntegrationFileNoPages(documentDTO.getNumOfPages() != null ? documentDTO.getNumOfPages() : null);
         dmsFiles.setArchivedDocumentStatus(IntegrationFileStatus.NEW.getId());
-        dmsFiles.setTransactionId(transactionId); // ✅ Same transactionId for all
+        dmsFiles.setTransactionId(transactionId);
         dmsFiles.setArchivedDocumentId(documentId);
         dmsFiles.setIntegrationSystemId(documentDTO.getIntegrationSystemId());
         dmsFiles.setCreatedDate(new Date());
+
+        // ✅ 1) INTEGRATION_PROPERTIES_JSON (serialize properties list as JSON)
+        try {
+            String propsJson = (documentDTO.getProperties() == null)
+                    ? "[]"
+                    : objectMapper.writeValueAsString(documentDTO.getProperties());
+            dmsFiles.setIntegrationPropertiesJson(propsJson);
+        } catch (Exception ex) {
+            // fallback: store a minimal error marker to avoid null
+            dmsFiles.setIntegrationPropertiesJson("[]");
+        }
+
+        // ✅ 2) INTEGRATION_FILE_EXT (take first file ext from uploadDocumentList)
+        String fileExt = null;
+        if (documentDTO.getUploadDocumentList() != null && !documentDTO.getUploadDocumentList().isEmpty()) {
+            CustomDocument first = documentDTO.getUploadDocumentList().get(0);
+            if (first != null && first.getFileExt() != null && !first.getFileExt().isEmpty()) {
+                fileExt = first.getFileExt();
+            }
+        }
+        dmsFiles.setIntegrationFileExt(fileExt);
+
+        // ✅ 3) INTEGRATION_CLASSIFICATION_ID (lookup by documentClassName)
+        Long classificationId = null;
+        if (documentDTO.getDocumentClassName() != null && !documentDTO.getDocumentClassName().isEmpty()) {
+            // NOTE: ensure DB column is SYMBOLIC_NAME (or adjust the repo/native query to exact spelling)
+            classificationId = classificationsRepo.findIdBySymbolicName(documentDTO.getDocumentClassName());
+        }
+        dmsFiles.setIntegrationClassificationId(classificationId);
+
         return dmsIntegrationFilesRepository.save(dmsFiles);
     }
 

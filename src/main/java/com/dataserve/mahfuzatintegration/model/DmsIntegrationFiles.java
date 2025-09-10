@@ -47,4 +47,13 @@ public class DmsIntegrationFiles {
 
     @Column(name = "TRANSACTION_ID")
     private Long transactionId;
+
+    @Column(name = "INTEGRATION_CLASSIFICATION_ID")
+    private Long integrationClassificationId;
+
+    @Column(name = "INTEGRATION_FILE_EXT", length = 20)
+    private String integrationFileExt;
+
+    @Column(name = "INTEGRATION_PROPERTIES_JSON")
+    private String integrationPropertiesJson;
 }
