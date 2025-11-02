@@ -222,17 +222,21 @@ public class FileNetService {
             ObjectStore objectStore = con.connect(username, password);
             Document document = Factory.Document.createInstance(objectStore, dto.getDocumentClassName());
             Properties docProps = document.getProperties();
+            List<PropertyDTO> propDtoListWithDataType = new ArrayList<PropertyDTO>();
             for (PropertyDTO propDto : dto.getProperties()) {
-                String className = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(), propDto);
-                if (className == null) {
+                String propertyDataType = getPropertyDtoDataType(objectStore,dto.getDocumentClassName(), propDto);
+            	propDto.setDataType(propertyDataType);
+                if (propertyDataType == null) {
                     throw new CustomServiceException(
                             ArchiveErrorCode.UNSUPPORTED_DATA_TYPE.getCode(), // Error code for unsupported data types
                             configUtil.getLocalMessage("1029", new String[]{propDto.getDataType()}) // Localized message with dynamic data type
                     );
                 }
-
-                setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), className);
+            	propDtoListWithDataType.add(propDto);
+            	
+                setPropertyValue(docProps, propDto.getSymbolicName(), propDto.getPropertyValue(), propertyDataType);
             }
+            dto.setProperties(propDtoListWithDataType);
 //            document.getProperties().putValue("DocumentTitle", dto.getDocumentTitle());
             document.set_ContentElements(getContentElementsBase64(dto.getUploadDocumentList()));
             document.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
